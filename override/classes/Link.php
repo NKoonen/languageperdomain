@@ -50,7 +50,6 @@ class Link extends LinkCore
         }
 
         $orginalPsLink = $base.$shop->getBaseURI();
-        $new_extension = { ["id_languageperdomain"]=> 3, ["lang_id"]=>3, ["target_replace"]=>1 ,["new_target"]=> "wouterstextiles.de.keraweb.nl" };
 
         $new_extension = Db::getInstance()->getRow(
             '
@@ -60,11 +59,9 @@ class Link extends LinkCore
             AND `target_replace` = '.(int)Context::getContext()->shop->id.'
             '
         );
-        $osps = preg_replace("(^http?://)", "",$orginalPsLink);
-        $osps = preg_replace("(^https?://)", "",$osps);
 
         if ($new_extension) {
-            return str_replace($osps, $new_extension["new_target"]."/", $orginalPsLink);
+            return str_replace(urlencode(urldecode($orginalPsLink)), $new_extension["new_target"], $orginalPsLink);
         } else {
             return $orginalPsLink;
         }
