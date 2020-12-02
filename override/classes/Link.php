@@ -61,7 +61,8 @@ class Link extends LinkCore
         );
 
         if ($new_extension) {
-            return str_replace(urlencode(urldecode($orginalPsLink)), $new_extension["new_target"], $orginalPsLink);
+            $LanguagePerDomainLink = str_replace(parse_url($orginalPsLink)["host"], $new_extension["new_target"], $orginalPsLink);
+            return $LanguagePerDomainLink;
         } else {
             return $orginalPsLink;
         }
