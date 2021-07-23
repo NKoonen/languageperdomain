@@ -60,7 +60,8 @@ class Link extends LinkCore
             '
         );
 
-        if ($new_extension) {
+        $controller = Dispatcher::getInstance()->getController();
+        if ($new_extension && $controller != 'AdminOrders') {
             $LanguagePerDomainLink = str_replace(parse_url($orginalPsLink)["host"], $new_extension["new_target"], $orginalPsLink);
             return $LanguagePerDomainLink;
         } else {
