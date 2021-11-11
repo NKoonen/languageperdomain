@@ -35,6 +35,9 @@ class Languageperdomain extends Module implements WidgetInterface
 	protected $output = '';
 	private $templateFile;
 
+	/**
+	 * @inheritDoc
+	 */
 	public function __construct()
 	{
 		$this->name = 'languageperdomain';
@@ -54,6 +57,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		$this->context->smarty->assign( 'languageperdomain_base_url', array( $this, 'getBaseLink' ) );
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function install()
 	{
 		include(dirname(__FILE__).'/sql/install.php');
@@ -65,6 +71,9 @@ class Languageperdomain extends Module implements WidgetInterface
 			$this->registerHook( 'actionHtaccessCreate' );
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function uninstall()
 	{
 		include(dirname(__FILE__).'/sql/uninstall.php');
@@ -72,6 +81,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		return parent::uninstall();
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function renderWidget($hookName = null, array $configuration = [])
 	{
 		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
@@ -85,6 +97,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		return FALSE;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getWidgetVariables($hookName = null, array $configuration = [])
 	{
 		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
@@ -113,11 +128,17 @@ class Languageperdomain extends Module implements WidgetInterface
 		);
 	}
 
+	/**
+	 * @return string
+	 */
 	private function getNameSimple($name)
 	{
 		return preg_replace('/\s\(.*\)$/', '', $name);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getDomains() {
 		return Db::getInstance()->executeS(
 			'
@@ -127,6 +148,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		);
 	}
 
+	/**
+	 * @return string|array
+	 */
 	public function getLangDomain( $full = false, $idLang = null, $idShop = null )
 	{
 		if ( ! $idLang ) {
@@ -151,11 +175,18 @@ class Languageperdomain extends Module implements WidgetInterface
 		return $result['new_target'];
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getBaseLink()
 	{
 		return $this->context->link->getBaseLink();
 	}
 
+	/**
+	 * @param string $url
+	 * @return string
+	 */
 	public function replaceDomain( $url )
 	{
 		// Only run in front-end context.
@@ -171,6 +202,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		return str_replace( $parsed['host'], $this->getLangDomain(), $url );
 	}
 
+	/**
+	 * @param array $params
+	 */
 	public function hookActionFrontControllerSetVariables( $params )
 	{
 		if ( empty( $params['templateVars'] )) {
@@ -199,6 +233,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		$params['templateVars']['urls'] = $urls;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getContent()
 	{
 		$output = null;
@@ -229,6 +266,12 @@ class Languageperdomain extends Module implements WidgetInterface
 		return $output.$this->displayForm();
 	}
 
+	/**
+	 * @throws PrestaShopDatabaseException
+	 *
+	 * @param string $updatedTarget
+	 * @param int $langId
+	 */
 	public function updatePSURL($updatedTarget, $langId)
 	{
 		$domain = $this->getLangDomain( false, $langId );
@@ -256,6 +299,10 @@ class Languageperdomain extends Module implements WidgetInterface
 		}
 	}
 
+	/**
+	 * @param $updatedTarget
+	 * @param $langId
+	 */
 	public function updateDomain($updatedTarget, $langId)
 	{
 
@@ -268,6 +315,12 @@ class Languageperdomain extends Module implements WidgetInterface
 		);
 	}
 
+	/**
+	 * @throws PrestaShopDatabaseException
+	 *
+	 * @param string $updatedTarget
+	 * @param int $langId
+	 */
 	public function createDomain($updatedTarget, $langId)
 	{
 		$createNew = Db::getInstance()->insert(
@@ -280,9 +333,11 @@ class Languageperdomain extends Module implements WidgetInterface
 		);
 	}
 
+	/**
+	 * @return string
+	 */
 	public function displayForm()
 	{
-
 		// Get default language
 		$defaultLang = (int)Configuration::get('PS_LANG_DEFAULT');
 
