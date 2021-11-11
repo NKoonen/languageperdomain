@@ -59,8 +59,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		include(dirname(__FILE__).'/sql/install.php');
 
 		return parent::install() &&
-			$this->registerHook('header') &&
-			$this->registerHook('displayTop');
+			$this->registerHook( 'header' ) &&
+			$this->registerHook( 'displayTop' ) &&
+			$this->registerHook( 'actionFrontControllerSetVariables' );
 	}
 
 	public function uninstall()
@@ -129,6 +130,34 @@ class Languageperdomain extends Module implements WidgetInterface
 		}
 
 		return str_replace( $parsed['host'], $this->getLangDomain(), $url );
+	}
+
+	public function hookActionFrontControllerSetVariables( $params )
+	{
+		if ( empty( $params['templateVars'] )) {
+			return;
+		}
+		$vars = $params['templateVars'];
+
+		if ( empty( $vars['urls'] ) ) {
+			return;
+		}
+
+		$urls = $vars['urls'];
+
+		$replace = array(
+			'base_url',
+			'current_url',
+			'shop_domain_url',
+		);
+
+		foreach ( $urls as $key => $url ) {
+			if ( in_array( $key, $replace, true ) ) {
+				$urls[ $key ] = $this->replaceDomain( $url );
+			}
+		}
+
+		$params['templateVars']['urls'] = $urls;
 	}
 
 	public function getContent()
