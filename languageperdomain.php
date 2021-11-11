@@ -135,6 +135,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @since 1.1.0
 	 * @return array
 	 */
 	public function getDomains() {
@@ -147,6 +148,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @since 1.1.0
 	 * @return string|array
 	 */
 	public function getLangDomain( $full = false, $idLang = null, $idShop = null )
@@ -174,6 +176,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @since 1.1.0
 	 * @param string $url
 	 * @return string
 	 */
@@ -201,6 +204,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @since 1.1.0
 	 * @param array $params
 	 */
 	public function hookActionFrontControllerSetVariables( $params )
@@ -401,6 +405,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @since 1.1.0
 	 * Make sure translation domains are accepted for media URL's.
 	 */
 	public function hookActionHtaccessCreate() {
