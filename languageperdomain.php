@@ -200,10 +200,11 @@ class Languageperdomain extends Module implements WidgetInterface
 			$domain = $url[0];
 			$url = implode( '/', $url );
 		} else {
-			$domain = Tools::extractHost( $url );
-			if ( empty( $domain ) ) {
+			$parts = parse_url( $url );
+			if ( empty( $parts['host'] ) ) {
 				return $url;
 			}
+			$domain = $parts['host'];
 		}
 
 		return str_replace( $domain, $this->getLangDomain(), $url );
