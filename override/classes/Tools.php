@@ -26,54 +26,56 @@
 
 class Tools extends ToolsCore
 {
-    /**
-     * Get the language id according to the url
-     *
-     * @inheritDoc
-     */
-    public static function switchLanguage(Context $context = null)
-    {
-	    /** @var Languageperdomain $languageperdomain */
-	    $languageperdomain = Module::getInstanceByName('languageperdomain');
+	/**
+	 * Get the language id according to the url
+	 *
+	 * @inheritDoc
+	 */
+	public static function switchLanguage(Context $context = null)
+	{
+		/** @var Languageperdomain $languageperdomain */
+		$languageperdomain = Module::getInstanceByName('languageperdomain');
 		if ( ! $languageperdomain ) {
 			parent::switchLanguage();
 			return;
 		}
 
-        if (null === $context) {
-            $context = Context::getContext();
-        }
-        if (!isset($context->cookie)) {
-            return;
-        }
-        if (($iso = Tools::getValue('isolang')) &&
-            Validate::isLanguageIsoCode($iso) &&
-            ($id_lang = (int)Language::getIdByIso($iso))
-        ) {
-            $_GET['id_lang'] = $id_lang;
-        }
+		if (null === $context) {
+			$context = Context::getContext();
+		}
+		if (!isset($context->cookie)) {
+			return;
+		}
+		if (($iso = Tools::getValue('isolang')) &&
+			Validate::isLanguageIsoCode($iso) &&
+			($id_lang = (int)Language::getIdByIso($iso))
+		) {
+			$_GET['id_lang'] = $id_lang;
+		}
 
-        $newLanguageId = 0;
-        $curUrl = urlencode( urldecode( Tools::getHttpHost() ) );
+		$newLanguageId = 0;
+		$curUrl = urlencode( urldecode( Tools::getHttpHost() ) );
 
-        $allExtensions = $languageperdomain->getDomains();
-        foreach ($allExtensions as $extension) {
-            if ( $curUrl === $extension['new_target'] ) {
-                $newLanguageId = (int)$extension['lang_id'];
+		$allExtensions = $languageperdomain->getDomains();
+
+		foreach ($allExtensions as $extension) {
+			if ( $curUrl === $extension['new_target'] ) {
+				$newLanguageId = (int)$extension['lang_id'];
 				break;
-            }
-        }
-        if (Validate::isUnsignedId($newLanguageId) && $newLanguageId !== 0 && $context->cookie->id_lang !== $newLanguageId)
-        {
-            $context->cookie->id_lang = $newLanguageId;
-            $language = new Language($newLanguageId);
-            if (Validate::isLoadedObject($language) && $language->active && $language->isAssociatedToShop()) {
-                $context->language = $language;
-            }
-        }
+			}
+		}
 
-        Tools::setCookieLanguage($context->cookie);
-    }
+		if (Validate::isUnsignedId($newLanguageId) && $newLanguageId !== 0 && $context->cookie->id_lang !== $newLanguageId)
+		{
+			$context->cookie->id_lang = $newLanguageId;
+			$language = new Language($newLanguageId);
+			if (Validate::isLoadedObject($language) && $language->active && $language->isAssociatedToShop()) {
+				$context->language = $language;
+			}
+		}
+
+		Tools::setCookieLanguage($context->cookie);
+	}
 
 	/**
 	 * Replace media server URL with translation domain if no media servers are set.
