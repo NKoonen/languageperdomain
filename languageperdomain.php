@@ -174,14 +174,6 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getBaseLink()
-	{
-		return $this->context->link->getBaseLink();
-	}
-
-	/**
 	 * @param string $url
 	 * @return string
 	 */
