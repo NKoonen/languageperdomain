@@ -84,12 +84,17 @@ class Tools extends ToolsCore
 	 */
 	public static function getMediaServer(string $filename): string
 	{
+		$url = parent::getMediaServer( $filename );
+
 		if ( ! Tools::hasMediaServer() ) {
+
+			/** @var Languageperdomain $languageperdomain */
 			$languageperdomain = Module::getInstanceByName('languageperdomain');
 			if ( $languageperdomain ) {
-				return $languageperdomain->getLangDomain();
+				return $languageperdomain->replaceDomain( $url );
 			}
 		}
-		return parent::getMediaServer( $filename );
+
+		return $url;
 	}
 }
