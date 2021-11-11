@@ -70,6 +70,12 @@ class Link extends LinkCore
 
 	    if ( $this->languageperdomain ) {
 
+			$mediaLink = $this->getMediaLink( '' );
+		    if ( false !== strpos( $imageLink, $mediaLink ) && Tools::hasMediaServer() ) {
+				// Return default server URL if media server is set.
+			    return $imageLink;
+		    }
+
 		    return $this->languageperdomain->replaceDomain( $imageLink );
 	    }
 
