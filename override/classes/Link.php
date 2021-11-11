@@ -26,12 +26,21 @@
 
 class Link extends LinkCore
 {
-    /**
-     * @param int|null $idShop
-     * @param bool|null $ssl
-     * @param bool $relativeProtocol
-     *
-     * @return string
+	/**
+	 * @var Languageperdomain
+	 */
+	public $languageperdomain = null;
+
+	/**
+	 * @inheritDoc
+	 */
+	public function __construct( $protocolLink = null, $protocolContent = null ) {
+		parent::__construct( $protocolLink, $protocolContent );
+		$this->languageperdomain = Module::getInstanceByName('languageperdomain');
+	}
+
+	/**
+	 * @inheritDoc
      */
     public function getBaseLink($idShop = null, $ssl = null, $relativeProtocol = false)
     {
