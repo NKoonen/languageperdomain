@@ -203,25 +203,27 @@ class Languageperdomain extends Module implements WidgetInterface
 	{
 		$output = null;
 		if (Tools::isSubmit('submit'.$this->name)) {
+
 			$languages = Language::getLanguages(TRUE, $this->context->shop->id);
 			if (count($languages) <= 0) {
 				$output .= $this->displayError($this->l('No active languages'));
-			}
-			foreach ($languages as $lang) {
-				$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
-				if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
-					$this->updatePSURL($updatedTarget, $lang["id_lang"]);
-					$this->getNewTargetOfLang($lang["id_lang"]) ? $this->updateDomain(
-						$updatedTarget,
-						$lang["id_lang"]
-					) : $this->createDomain($updatedTarget, $lang["id_lang"]);
-				} else {
-					$output .= $this->displayError(
-						$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
-					);
+			} else {
+				foreach ($languages as $lang) {
+					$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
+					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
+						$this->updatePSURL($updatedTarget, $lang["id_lang"]);
+						$this->getLangDomain( false, $lang["id_lang"] ) ? $this->updateDomain(
+							$updatedTarget,
+							$lang["id_lang"]
+						) : $this->createDomain($updatedTarget, $lang["id_lang"]);
+					} else {
+						$output .= $this->displayError(
+							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
+						);
+					}
 				}
+				$output .= $this->displayConfirmation($this->l('Settings updated'));
 			}
-			$output .= $this->displayConfirmation($this->l('Settings updated'));
 		}
 
 		return $output.$this->displayForm();
