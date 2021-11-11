@@ -241,20 +241,15 @@ class Languageperdomain extends Module implements WidgetInterface
 		$output = null;
 		if (Tools::isSubmit('submit'.$this->name)) {
 
-			$languages = Language::getLanguages(TRUE, $this->context->shop->id);
+			$shopId = $this->context->shop->id;
+			$languages = Language::getLanguages(TRUE, $shopId);
 			if (count($languages) <= 0) {
 				$output .= $this->displayError($this->l('No active languages'));
 			} else {
 				foreach ($languages as $lang) {
 					$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
 					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
-						$this->updatePSURL($updatedTarget, $lang["id_lang"]);
-						$domain = $this->getLangDomain( false, $lang["id_lang"] );
-						if ( $domain ) {
-							$this->updateDomain( $updatedTarget, $lang["id_lang"] );
-						} else {
-							$this->createDomain( $updatedTarget, $lang["id_lang"] );
-						}
+						$this->updateDomain( $updatedTarget, $lang["id_lang"], $shopId );
 					} else {
 						$output .= $this->displayError(
 							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
@@ -273,71 +268,57 @@ class Languageperdomain extends Module implements WidgetInterface
 	 *
 	 * @param string $updatedTarget
 	 * @param int $langId
+	 * @param int $shopId
 	 *
 	 * @return bool
 	 */
-	public function updatePSURL($updatedTarget, $langId)
+	public function updateDomain( $updatedTarget, $langId, $shopId )
 	{
 		$domain = $this->getLangDomain( false, $langId );
+		$updatedTarget = pSQL($updatedTarget);
+		$langId = (int) $langId;
+		$shopId = (int) $shopId;
 
 		if ( $domain ) {
-			return Db::getInstance()->update(
+			// Update PS shop URL's.
+			Db::getInstance()->update(
 				'shop_url',
 				array(
-					'domain' => pSQL($updatedTarget),
-					'domain_ssl' => pSQL($updatedTarget),
+					'domain'     => $updatedTarget,
+					'domain_ssl' => $updatedTarget,
 				),
-				'domain = "'.pSQL($domain).'" AND id_shop = '.(int)Context::getContext()->shop->id.''
-			)
+				'domain = "'.pSQL($domain).'" AND id_shop = '. $shopId.''
+			);
+			// Update lang-per-domain table.
+			Db::getInstance()->update(
+				'languageperdomain',
+				array(
+					'new_target' => $updatedTarget,
+				),
+				'lang_id = '.$langId.' AND target_replace = '.$shopId.''
+			);
 		} else {
-			return Db::getInstance()->insert(
+			// Create domain in PS shop URL's.
+			Db::getInstance()->insert(
 				'shop_url',
 				array(
-					'domain'     => pSQL( $updatedTarget ),
-					'domain_ssl' => pSQL( $updatedTarget ),
-					'id_shop'    => (int) Context::getContext()->shop->id,
-					'main'       => (int) 1,
-					'active'     => (int) 1,
+					'domain'     => $updatedTarget,
+					'domain_ssl' => $updatedTarget,
+					'id_shop'    => $shopId,
+					'main'       => 1,
+					'active'     => 1,
+				)
+			);
+			// Create domain in lang-per-domain table.
+			Db::getInstance()->insert(
+				'languageperdomain',
+				array(
+					'lang_id'        => $langId,
+					'new_target'     => $updatedTarget,
+					'target_replace' => $shopId,
 				)
 			);
 		}
-	}
-
-	/**
-	 * @param $updatedTarget
-	 * @param $langId
-	 *
-	 * @return bool
-	 */
-	public function updateDomain($updatedTarget, $langId)
-	{
-		return Db::getInstance()->update(
-			'languageperdomain',
-			array(
-				'new_target' => pSQL($updatedTarget),
-			),
-			'lang_id = '.(int)$langId.' AND target_replace = '.(int)Context::getContext()->shop->id.''
-		);
-	}
-
-	/**
-	 * @throws PrestaShopDatabaseException
-	 *
-	 * @param string $updatedTarget
-	 * @param int $langId
-	 *
-	 * @return bool
-	 */
-	public function createDomain($updatedTarget, $langId)
-	{
-		return Db::getInstance()->insert(
-			'languageperdomain',
-			array(
-				'lang_id' => (int)$langId,
-				'new_target' => pSQL($updatedTarget),
-				'target_replace' => (int)Context::getContext()->shop->id,
-			)
-		);
 	}
 
 	/**
