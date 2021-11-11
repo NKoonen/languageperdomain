@@ -53,17 +53,16 @@ class Link extends LinkCore
     }
 
     /**
-     * @param null $idLang
-     * @param Context|null $context
-     * @param null $idShop
-     *
-     * @return string
+     * @inheritDoc
      */
     protected function getLangLink($idLang = null, Context $context = null, $idShop = null)
     {
         return '';
     }
 
+	/**
+	 * @inheritDoc
+	 */
     public function getImageLink($name, $ids, $type = null)
     {
 		$imageLink = parent::getImageLink( $name, $ids, $type );
