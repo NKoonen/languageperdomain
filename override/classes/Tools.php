@@ -67,10 +67,10 @@ class Tools extends ToolsCore
 
 		if ( 0 < $newLanguageId && $context->cookie->id_lang !== $newLanguageId )
 		{
-			$context->cookie->id_lang = $newLanguageId;
-			$language = new Language($newLanguageId);
-			if (Validate::isLoadedObject($language) && $language->active && $language->isAssociatedToShop()) {
+			$language = new Language( $newLanguageId );
+			if ( Validate::isLoadedObject($language) && $language->active && $language->isAssociatedToShop() ) {
 				$context->language = $language;
+				$context->cookie->id_lang = $newLanguageId;
 			}
 		}
 
