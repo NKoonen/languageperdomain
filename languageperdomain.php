@@ -273,13 +273,15 @@ class Languageperdomain extends Module implements WidgetInterface
 	 *
 	 * @param string $updatedTarget
 	 * @param int $langId
+	 *
+	 * @return bool
 	 */
 	public function updatePSURL($updatedTarget, $langId)
 	{
 		$domain = $this->getLangDomain( false, $langId );
 
 		if ( $domain ) {
-			Db::getInstance()->update(
+			return Db::getInstance()->update(
 				'shop_url',
 				array(
 					'domain' => pSQL($updatedTarget),
@@ -288,7 +290,7 @@ class Languageperdomain extends Module implements WidgetInterface
 				'domain = "'.pSQL($domain).'" AND id_shop = '.(int)Context::getContext()->shop->id.''
 			)
 		} else {
-			Db::getInstance()->insert(
+			return Db::getInstance()->insert(
 				'shop_url',
 				array(
 					'domain'     => pSQL( $updatedTarget ),
@@ -304,11 +306,12 @@ class Languageperdomain extends Module implements WidgetInterface
 	/**
 	 * @param $updatedTarget
 	 * @param $langId
+	 *
+	 * @return bool
 	 */
 	public function updateDomain($updatedTarget, $langId)
 	{
-
-		$result = Db::getInstance()->update(
+		return Db::getInstance()->update(
 			'languageperdomain',
 			array(
 				'new_target' => pSQL($updatedTarget),
@@ -322,10 +325,12 @@ class Languageperdomain extends Module implements WidgetInterface
 	 *
 	 * @param string $updatedTarget
 	 * @param int $langId
+	 *
+	 * @return bool
 	 */
 	public function createDomain($updatedTarget, $langId)
 	{
-		$createNew = Db::getInstance()->insert(
+		return Db::getInstance()->insert(
 			'languageperdomain',
 			array(
 				'lang_id' => (int)$langId,
