@@ -50,6 +50,8 @@ class Languageperdomain extends Module implements WidgetInterface
 		$this->confirmUninstall = $this->l('Are you sure about disabling Language per domain?');
 		$this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
 		parent::__construct();
+
+		$this->context->smarty->assign( 'languageperdomain_base_url', array( $this, 'getBaseLink' ) );
 	}
 
 	public function install()
@@ -112,6 +114,11 @@ class Languageperdomain extends Module implements WidgetInterface
 	private function getNameSimple($name)
 	{
 		return preg_replace('/\s\(.*\)$/', '', $name);
+	}
+
+	public function getBaseLink()
+	{
+		return $this->context->link->getBaseLink();
 	}
 
 	public function getContent()
