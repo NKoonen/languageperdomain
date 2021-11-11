@@ -194,12 +194,19 @@ class Languageperdomain extends Module implements WidgetInterface
 			return $url;
 		}
 
-		$parsed = parse_url( $url );
-		if ( empty( $parsed['host'] ) ) {
-			return $url;
+		if ( false === strpos( $url, '//' ) ) {
+			// No protocol.
+			$url = explode( '/', $url );
+			$domain = $url[0];
+			$url = implode( '/', $url );
+		} else {
+			$domain = Tools::extractHost( $url );
+			if ( empty( $domain ) ) {
+				return $url;
+			}
 		}
 
-		return str_replace( $parsed['host'], $this->getLangDomain(), $url );
+		return str_replace( $domain, $this->getLangDomain(), $url );
 	}
 
 	/**
