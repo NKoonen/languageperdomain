@@ -117,6 +117,30 @@ class Languageperdomain extends Module implements WidgetInterface
 		return preg_replace('/\s\(.*\)$/', '', $name);
 	}
 
+	public function getLangDomain( $full = false, $idLang = null, $idShop = null )
+	{
+		if ( ! $idLang ) {
+			$idLang = $this->context->language->id;
+		}
+		if ( ! $idShop ) {
+			$idShop = $this->context->shop->id;
+		}
+
+		$result = Db::getInstance()->getRow(
+			'
+            SELECT *
+            FROM `'._DB_PREFIX_.'languageperdomain`
+            WHERE `lang_id` = '.(int)$idLang.'
+            AND `target_replace` = '.(int)$idShop.'
+            '
+		);
+
+		if ( $full ) {
+			return $result;
+		}
+		return $result['new_target'];
+	}
+
 	public function getBaseLink()
 	{
 		return $this->context->link->getBaseLink();
