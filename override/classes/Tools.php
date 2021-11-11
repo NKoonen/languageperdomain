@@ -60,12 +60,12 @@ class Tools extends ToolsCore
 
 		foreach ($allExtensions as $extension) {
 			if ( $curUrl === $extension['new_target'] ) {
-				$newLanguageId = (int)$extension['lang_id'];
+				$newLanguageId = (int) $extension['lang_id'];
 				break;
 			}
 		}
 
-		if (Validate::isUnsignedId($newLanguageId) && $newLanguageId !== 0 && $context->cookie->id_lang !== $newLanguageId)
+		if ( 0 < $newLanguageId && $context->cookie->id_lang !== $newLanguageId )
 		{
 			$context->cookie->id_lang = $newLanguageId;
 			$language = new Language($newLanguageId);
