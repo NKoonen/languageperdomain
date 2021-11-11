@@ -59,25 +59,4 @@ class Link extends LinkCore
     {
         return '';
     }
-
-	/**
-	 * @inheritDoc
-	 */
-    public function getImageLink($name, $ids, $type = null)
-    {
-		$imageLink = parent::getImageLink( $name, $ids, $type );
-
-	    if ( $this->languageperdomain ) {
-
-			$mediaLink = $this->getMediaLink( '' );
-		    if ( false !== strpos( $imageLink, $mediaLink ) && Tools::hasMediaServer() ) {
-				// Return default server URL if media server is set.
-			    return $imageLink;
-		    }
-
-		    return $this->languageperdomain->replaceDomain( $imageLink );
-	    }
-
-	    return $imageLink;
-    }
 }
