@@ -33,6 +33,13 @@ class Tools extends ToolsCore
      */
     public static function switchLanguage(Context $context = null)
     {
+	    /** @var Languageperdomain $languageperdomain */
+	    $languageperdomain = Module::getInstanceByName('languageperdomain');
+		if ( ! $languageperdomain ) {
+			parent::switchLanguage();
+			return;
+		}
+
         if (null === $context) {
             $context = Context::getContext();
         }
@@ -49,8 +56,6 @@ class Tools extends ToolsCore
         $newLanguageId = 0;
         $curUrl = urlencode( urldecode( Tools::getHttpHost() ) );
 
-		/** @var Languageperdomain $languageperdomain */
-	    $languageperdomain = Module::getInstanceByName('languageperdomain');
         $allExtensions = $languageperdomain->getDomains();
         foreach ($allExtensions as $extension) {
             if ( $curUrl === $extension['new_target'] ) {
