@@ -61,7 +61,8 @@ class Languageperdomain extends Module implements WidgetInterface
 		return parent::install() &&
 			$this->registerHook( 'header' ) &&
 			$this->registerHook( 'displayTop' ) &&
-			$this->registerHook( 'actionFrontControllerSetVariables' );
+			$this->registerHook( 'actionFrontControllerSetVariables' ) &&
+			$this->registerHook( 'actionHtaccessCreate' );
 	}
 
 	public function uninstall()
@@ -115,6 +116,15 @@ class Languageperdomain extends Module implements WidgetInterface
 	private function getNameSimple($name)
 	{
 		return preg_replace('/\s\(.*\)$/', '', $name);
+	}
+
+	public function getDomains() {
+		return Db::getInstance()->executeS(
+			'
+            SELECT *
+            FROM `'._DB_PREFIX_.'languageperdomain`
+            '
+		);
 	}
 
 	public function getLangDomain( $full = false, $idLang = null, $idShop = null )
@@ -349,5 +359,27 @@ class Languageperdomain extends Module implements WidgetInterface
 
 
 		return $helper->generateForm($fieldsForm);
+	}
+
+	/**
+	 * Make sure translation domains are accepted for media URL's.
+	 */
+	public function hookActionHtaccessCreate() {
+		$path = _PS_ROOT_DIR_ . '/.htaccess';
+
+		$content = file_get_contents($path);
+
+		$domains = $this->getDomains();
+		$domain_cond = '';
+		foreach ( $domains as $domain ) {
+			$domain_cond .= 'RewriteCond %{HTTP_HOST} ^' . $domain['new_target'] . '$ [OR]' . PHP_EOL;
+		}
+
+		$find = 'RewriteCond %{HTTP_HOST} ^';
+		$replace = $domain_cond . $find;
+
+		$content = str_replace( $find, $replace, $content );
+
+		file_put_contents( $path, $content );
 	}
 }
