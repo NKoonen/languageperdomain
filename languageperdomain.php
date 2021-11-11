@@ -148,6 +148,11 @@ class Languageperdomain extends Module implements WidgetInterface
 
 	public function replaceDomain( $url )
 	{
+		// Only run in front-end context.
+		if ( false === strpos( Context::getContext()->controller->controller_type, 'front' ) ) {
+			return $url;
+		}
+
 		$parsed = parse_url( $url );
 		if ( empty( $parsed['host'] ) ) {
 			return $url;
