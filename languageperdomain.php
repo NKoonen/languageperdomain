@@ -121,6 +121,16 @@ class Languageperdomain extends Module implements WidgetInterface
 		return $this->context->link->getBaseLink();
 	}
 
+	public function replaceDomain( $url )
+	{
+		$parsed = parse_url( $url );
+		if ( empty( $parsed['host'] ) ) {
+			return $url;
+		}
+
+		return str_replace( $parsed['host'], $this->getLangDomain(), $url );
+	}
+
 	public function getContent()
 	{
 		$output = null;
