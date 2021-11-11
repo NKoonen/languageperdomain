@@ -33,6 +33,7 @@ class Link extends LinkCore
     {
 	    $baseLink = parent::getBaseLink( $idShop, $ssl, $relativeProtocol );
 
+	    /** @var Languageperdomain $languageperdomain */
 	    $languageperdomain = Module::getInstanceByName('languageperdomain');
 	    if ( $languageperdomain ) {
 		    return $languageperdomain->replaceDomain( $baseLink );
