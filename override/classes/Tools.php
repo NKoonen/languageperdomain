@@ -49,12 +49,9 @@ class Tools extends ToolsCore
         $newLanguageId = 0;
         $curUrl = urlencode( urldecode( Tools::getHttpHost() ) );
 
-        $allExtensions = Db::getInstance()->executeS(
-            '
-            SELECT *
-            FROM `'._DB_PREFIX_.'languageperdomain`
-            '
-        );
+		/** @var Languageperdomain $languageperdomain */
+	    $languageperdomain = Module::getInstanceByName('languageperdomain');
+        $allExtensions = $languageperdomain->getDomains();
         foreach ($allExtensions as $extension) {
             if ( $curUrl === $extension['new_target'] ) {
                 $newLanguageId = (int)$extension['lang_id'];
