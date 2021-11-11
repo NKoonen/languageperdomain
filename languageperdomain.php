@@ -365,6 +365,10 @@ class Languageperdomain extends Module implements WidgetInterface
 	 * Make sure translation domains are accepted for media URL's.
 	 */
 	public function hookActionHtaccessCreate() {
+		if (Shop::isFeatureActive() || Tools::hasMediaServer()) {
+			return;
+		}
+
 		$path = _PS_ROOT_DIR_ . '/.htaccess';
 
 		$content = file_get_contents($path);
