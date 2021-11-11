@@ -249,10 +249,12 @@ class Languageperdomain extends Module implements WidgetInterface
 					$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
 					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
 						$this->updatePSURL($updatedTarget, $lang["id_lang"]);
-						$this->getLangDomain( false, $lang["id_lang"] ) ? $this->updateDomain(
-							$updatedTarget,
-							$lang["id_lang"]
-						) : $this->createDomain($updatedTarget, $lang["id_lang"]);
+						$domain = $this->getLangDomain( false, $lang["id_lang"] );
+						if ( $domain ) {
+							$this->updateDomain( $updatedTarget, $lang["id_lang"] );
+						} else {
+							$this->createDomain( $updatedTarget, $lang["id_lang"] );
+						}
 					} else {
 						$output .= $this->displayError(
 							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
