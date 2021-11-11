@@ -29,10 +29,7 @@ class Tools extends ToolsCore
     /**
      * Get the language id according to the url
      *
-     * @param Context|null $context
-     *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @inheritDoc
      */
     public static function switchLanguage(Context $context = null)
     {
