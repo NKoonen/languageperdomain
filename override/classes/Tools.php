@@ -74,4 +74,20 @@ class Tools extends ToolsCore
 
         Tools::setCookieLanguage($context->cookie);
     }
+
+	/**
+	 * Replace media server URL with translation domain if no media servers are set.
+	 * @since 1.1.0
+	 * @inheritDoc
+	 */
+	public static function getMediaServer(string $filename): string
+	{
+		if ( ! Tools::hasMediaServer() ) {
+			$languageperdomain = Module::getInstanceByName('languageperdomain');
+			if ( $languageperdomain ) {
+				return $languageperdomain->getLangDomain();
+			}
+		}
+		return parent::getMediaServer( $filename );
+	}
 }
