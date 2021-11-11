@@ -47,7 +47,7 @@ class Tools extends ToolsCore
         }
 
         $newLanguageId = 0;
-        $curUrl = Tools::getHttpHost();
+        $curUrl = urlencode( urldecode( Tools::getHttpHost() ) );
 
         $allExtensions = Db::getInstance()->executeS(
             '
@@ -56,8 +56,8 @@ class Tools extends ToolsCore
             '
         );
         foreach ($allExtensions as $extension) {
-            if (urlencode(urldecode($curUrl)) === $extension["new_target"]) {
-                $newLanguageId = (int)$extension["lang_id"];
+            if ( $curUrl === $extension['new_target'] ) {
+                $newLanguageId = (int)$extension['lang_id'];
             }
         }
         if (Validate::isUnsignedId($newLanguageId) && $newLanguageId !== 0 && $context->cookie->id_lang !== $newLanguageId)
