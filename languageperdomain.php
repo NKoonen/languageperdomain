@@ -231,33 +231,29 @@ class Languageperdomain extends Module implements WidgetInterface
 
 	public function updatePSURL($updatedTarget, $langId)
 	{
-		$oldDomain = $this->getNewTargetOfLang($langId);
-		$result = $oldDomain ? Db::getInstance()->update(
-			'shop_url',
-			array(
-				'domain' => pSQL($updatedTarget),
-				'domain_ssl' => pSQL($updatedTarget),
-			),
-			'domain = "'.pSQL($oldDomain).'" AND id_shop = '.(int)Context::getContext()->shop->id.''
-		) :
-			Db::getInstance()->insert(
+		$domain = $this->getLangDomain( false, $langId );
+
+		if ( $domain ) {
+			Db::getInstance()->update(
 				'shop_url',
 				array(
 					'domain' => pSQL($updatedTarget),
 					'domain_ssl' => pSQL($updatedTarget),
-					'id_shop' => (int)Context::getContext()->shop->id,
-					'main' => (int)1,
-					'active' => (int)1,
+				),
+				'domain = "'.pSQL($domain).'" AND id_shop = '.(int)Context::getContext()->shop->id.''
+			)
+		} else {
+			Db::getInstance()->insert(
+				'shop_url',
+				array(
+					'domain'     => pSQL( $updatedTarget ),
+					'domain_ssl' => pSQL( $updatedTarget ),
+					'id_shop'    => (int) Context::getContext()->shop->id,
+					'main'       => (int) 1,
+					'active'     => (int) 1,
 				)
 			);
-	}
-
-	public function getNewTargetOfLang($langId)
-	{
-		return Db::getInstance()->getValue(
-			'SELECT `new_target` FROM `'._DB_PREFIX_.'languageperdomain` WHERE `lang_id` = '.(int)$langId.' AND `target_replace` = '.(int)Context::getContext(
-			)->shop->id.''
-		);
+		}
 	}
 
 	public function updateDomain($updatedTarget, $langId)
