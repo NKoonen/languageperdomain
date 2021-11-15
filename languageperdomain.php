@@ -80,6 +80,23 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @param Context $context
+	 * @return bool
+	 */
+	public function isAdmin( $context = null ) {
+		if ( ! $context instanceof Context ) {
+			$context = $this->context;
+		}
+
+		$controller_type = $context->controller->controller_type;
+		if ( $controller_type && true === stripos( $controller_type, 'admin' ) ) {
+			return true;
+		}
+
+		return defined( '_PS_ADMIN_DIR_' );
+	}
+
+	/**
 	 * @inheritDoc
 	 */
 	public function renderWidget($hookName = null, array $configuration = [])
@@ -184,7 +201,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	public function replaceDomain( $url, $idLang = null )
 	{
 		// Only run in front-end context.
-		if ( false === strpos( Context::getContext()->controller->controller_type, 'front' ) ) {
+		if ( $this->isAdmin() ) {
 			return $url;
 		}
 
