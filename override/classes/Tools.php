@@ -86,7 +86,7 @@ class Tools extends ToolsCore
 	{
 		$url = parent::getMediaServer( $filename );
 
-		if ( ! Tools::hasMediaServer() ) {
+		if ( ! self::hasMediaServer() ) {
 
 			/** @var Languageperdomain $languageperdomain */
 			$languageperdomain = Module::getInstanceByName('languageperdomain');
