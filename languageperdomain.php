@@ -178,9 +178,10 @@ class Languageperdomain extends Module implements WidgetInterface
 	/**
 	 * @since 1.1.0
 	 * @param string $url
+	 * @param int $idLang
 	 * @return string
 	 */
-	public function replaceDomain( $url )
+	public function replaceDomain( $url, $idLang = null )
 	{
 		// Only run in front-end context.
 		if ( false === strpos( Context::getContext()->controller->controller_type, 'front' ) ) {
@@ -200,7 +201,7 @@ class Languageperdomain extends Module implements WidgetInterface
 			$domain = $parts['host'];
 		}
 
-		return str_replace( $domain, $this->getLangDomain(), $url );
+		return str_replace( $domain, $this->getLangDomain( false, $idLang ), $url );
 	}
 
 	/**
