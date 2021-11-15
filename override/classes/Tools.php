@@ -99,6 +99,7 @@ class Tools extends ToolsCore
 	}
 
 	/**
+	 * @since 1.1.0
 	 * @inheritDoc
 	 */
 	public static function getShopDomain($http = false, $entities = false)
@@ -115,6 +116,7 @@ class Tools extends ToolsCore
 	}
 
 	/**
+	 * @since 1.1.0
 	 * @inheritDoc
 	 */
 	public static function getShopDomainSsl($http = false, $entities = false)
