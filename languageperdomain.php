@@ -80,6 +80,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @since 1.1.0
 	 * @param Context $context
 	 * @return bool
 	 */
