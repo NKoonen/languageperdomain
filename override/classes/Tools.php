@@ -97,4 +97,36 @@ class Tools extends ToolsCore
 
 		return $url;
 	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function getShopDomain($http = false, $entities = false)
+	{
+		$domain = parent::getShopDomain( $http, $entities );
+
+		/** @var Languageperdomain $languageperdomain */
+		$languageperdomain = Module::getInstanceByName('languageperdomain');
+		if ( $languageperdomain ) {
+			return $languageperdomain->replaceDomain( $domain );
+		}
+
+		return $domain;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function getShopDomainSsl($http = false, $entities = false)
+	{
+		$domain = parent::getShopDomainSsl( $http, $entities );
+
+		/** @var Languageperdomain $languageperdomain */
+		$languageperdomain = Module::getInstanceByName('languageperdomain');
+		if ( $languageperdomain ) {
+			return $languageperdomain->replaceDomain( $domain );
+		}
+
+		return $domain;
+	}
 }
