@@ -197,9 +197,10 @@ class Languageperdomain extends Module implements WidgetInterface
 	 * @since 1.1.0
 	 * @param string $url
 	 * @param int $idLang
+	 * @param int $idShop
 	 * @return string
 	 */
-	public function replaceDomain( $url, $idLang = null )
+	public function replaceDomain( $url, $idLang = null, $idShop = null )
 	{
 		// Only run in front-end context.
 		if ( $this->isAdmin() ) {
@@ -219,7 +220,7 @@ class Languageperdomain extends Module implements WidgetInterface
 			$domain = $parts['host'];
 		}
 
-		return str_replace( $domain, $this->getLangDomain( false, $idLang ), $url );
+		return str_replace( $domain, $this->getLangDomain( false, $idLang, $idShop ), $url );
 	}
 
 	/**
