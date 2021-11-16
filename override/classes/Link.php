@@ -27,6 +27,9 @@
 class Link extends LinkCore
 {
 	/**
+	 * Language per domain translator.
+	 *
+	 * @since 1.1.0
 	 * @param string $link
 	 * @param int $idLang
 	 * @param int $idShop
