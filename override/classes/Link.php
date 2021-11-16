@@ -66,7 +66,7 @@ class Link extends LinkCore
 	 */
 	public function getCategoryLink( $category, $alias = null, $idLang = null, $selectedFilters = null, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getCategoryLink( $category, $alias, $idLang, $selectedFilters, $idShop, $relativeProtocol );
-		return self::translateDomain( $link, $idLang );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang ) : $link;
 	}
 
 	/**
@@ -74,7 +74,7 @@ class Link extends LinkCore
 	 */
 	public function getCMSLink( $cms, $alias = null, $ssl = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getCMSLink( $cms, $alias, $ssl, $idLang, $idShop, $relativeProtocol );
-		return self::translateDomain( $link, $idLang );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang ) : $link;
 	}
 
 	/**
@@ -82,7 +82,7 @@ class Link extends LinkCore
 	 */
 	public function getCMSCategoryLink( $cmsCategory, $alias = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getCMSCategoryLink( $cmsCategory, $alias, $idLang, $idShop, $relativeProtocol );
-		return self::translateDomain( $link, $idLang );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang ) : $link;
 	}
 
 	/**
@@ -90,7 +90,7 @@ class Link extends LinkCore
 	 */
 	public function getPageLink( $controller, $ssl = null, $idLang = null, $request = null, $requestUrlEncode = false, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getPageLink( $controller, $ssl, $idLang, $request, $requestUrlEncode, $idShop, $relativeProtocol );
-		return self::translateDomain( $link, $idLang );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang ) : $link;
 	}
 
 	/**
@@ -98,7 +98,7 @@ class Link extends LinkCore
 	 */
 	public function getManufacturerLink( $manufacturer, $alias = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getManufacturerLink( $manufacturer, $alias, $idLang, $idShop, $relativeProtocol );
-		return self::translateDomain( $link, $idLang );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang ) : $link;
 	}
 
 	/**
@@ -106,7 +106,7 @@ class Link extends LinkCore
 	 */
 	public function getSupplierLink( $supplier, $alias = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getSupplierLink( $supplier, $alias, $idLang, $idShop, $relativeProtocol );
-		return self::translateDomain( $link, $idLang );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang ) : $link;
 	}
 
 	/**
@@ -114,6 +114,6 @@ class Link extends LinkCore
 	 */
 	public function getModuleLink( $module, $controller = 'default', array $params = [], $ssl = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getModuleLink( $module, $controller, $params, $ssl, $idLang, $idShop, $relativeProtocol );
-		return self::translateDomain( $link, $idLang );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang ) : $link;
 	}
 }
