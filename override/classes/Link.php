@@ -27,18 +27,27 @@
 class Link extends LinkCore
 {
 	/**
+	 * @param string $link
+	 * @param int $idLang
+	 * @return string
+	 */
+	public static function translateDomain( $link, $idLang )
+	{
+		/** @var Languageperdomain $languageperdomain */
+		$languageperdomain = Module::getInstanceByName('languageperdomain');
+		if ( $languageperdomain ) {
+			return $languageperdomain->replaceDomain( $link, $idLang );
+		}
+		return $link;
+	}
+
+	/**
 	 * @inheritDoc
      */
     public function getBaseLink($idShop = null, $ssl = null, $relativeProtocol = false)
     {
-	    $baseLink = parent::getBaseLink( $idShop, $ssl, $relativeProtocol );
-
-	    /** @var Languageperdomain $languageperdomain */
-	    $languageperdomain = Module::getInstanceByName('languageperdomain');
-	    if ( $languageperdomain ) {
-		    return $languageperdomain->replaceDomain( $baseLink );
-	    }
-		return $baseLink;
+	    $link = parent::getBaseLink( $idShop, $ssl, $relativeProtocol );
+		return self::translateDomain( $link );
     }
 
     /**
