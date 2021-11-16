@@ -34,7 +34,10 @@ class Link extends LinkCore
 	public static function translateDomain( $link, $idLang )
 	{
 		/** @var Languageperdomain $languageperdomain */
-		$languageperdomain = Module::getInstanceByName('languageperdomain');
+		static $languageperdomain = null;
+		if ( ! $languageperdomain ) {
+			$languageperdomain = Module::getInstanceByName('languageperdomain');
+		}
 		if ( $languageperdomain ) {
 			return $languageperdomain->replaceDomain( $link, $idLang );
 		}
