@@ -50,7 +50,7 @@ class Link extends LinkCore
     public function getBaseLink($idShop = null, $ssl = null, $relativeProtocol = false)
     {
 	    $link = parent::getBaseLink( $idShop, $ssl, $relativeProtocol );
-		return self::translateDomain( $link );
+		return self::translateDomain( $link, null );
     }
 
     /**
