@@ -68,6 +68,14 @@ class Link extends LinkCore
 	/**
 	 * @inheritDoc
 	 */
+	public function getProductLink( $product, $alias = null, $category = null, $ean13 = null, $idLang = null, $idShop = null, $idProductAttribute = null, $force_routes = false, $relativeProtocol = false, $withIdInAnchor = false, $extraParams = [], bool $addAnchor = true ) {
+		$link = parent::getProductLink( $product, $alias, $category, $ean13, $idLang, $idShop, $idProductAttribute, $force_routes, $relativeProtocol, $withIdInAnchor, $extraParams, $addAnchor );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public function getCategoryLink( $category, $alias = null, $idLang = null, $selectedFilters = null, $idShop = null, $relativeProtocol = false ) {
 		$link = parent::getCategoryLink( $category, $alias, $idLang, $selectedFilters, $idShop, $relativeProtocol );
 		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
