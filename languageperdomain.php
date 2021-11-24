@@ -89,9 +89,11 @@ class Languageperdomain extends Module implements WidgetInterface
 			$context = $this->context;
 		}
 
-		$controller_type = $context->controller->controller_type;
-		if ( $controller_type && true === stripos( $controller_type, 'admin' ) ) {
-			return true;
+		if ( $context->controller && isset( $context->controller->controller_type ) ) {
+			$controller_type = $context->controller->controller_type;
+			if ( $controller_type && true === stripos( $controller_type, 'admin' ) ) {
+				return true;
+			}
 		}
 
 		return defined( '_PS_ADMIN_DIR_' );
