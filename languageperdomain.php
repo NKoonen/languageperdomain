@@ -89,7 +89,10 @@ class Languageperdomain extends Module implements WidgetInterface
 			$context = $this->context;
 		}
 
-		if ( $context->controller && isset( $context->controller->controller_type ) ) {
+		if ( $context->controller instanceof Controller ) {
+			if ( $context->controller instanceof AdminController ) {
+				return true;
+			}
 			$controller_type = $context->controller->controller_type;
 			if ( $controller_type && true === stripos( $controller_type, 'admin' ) ) {
 				return true;
