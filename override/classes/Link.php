@@ -26,104 +26,106 @@
 
 class Link extends LinkCore
 {
-    /**
-     * @param int|null $idShop
-     * @param bool|null $ssl
-     * @param bool $relativeProtocol
-     *
-     * @return string
+	/**
+	 * Language per domain translator.
+	 *
+	 * @since 1.1.0
+	 * @param string $link
+	 * @param int $idLang
+	 * @param int $idShop
+	 * @return string
+	 */
+	public static function translateDomain( $link, $idLang, $idShop = null )
+	{
+		/** @var Languageperdomain $languageperdomain */
+		static $languageperdomain = null;
+		if ( ! $languageperdomain ) {
+			$languageperdomain = Module::getInstanceByName('languageperdomain');
+		}
+		if ( $languageperdomain ) {
+			return $languageperdomain->replaceDomain( $link, $idLang, $idShop );
+		}
+		return $link;
+	}
+
+	/**
+	 * @inheritDoc
      */
     public function getBaseLink($idShop = null, $ssl = null, $relativeProtocol = false)
     {
-        if (null === $ssl) {
-            $ssl = (Configuration::get('PS_SSL_ENABLED') && Configuration::get('PS_SSL_ENABLED_EVERYWHERE'));
-        }
-        if (Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE') && $idShop !== null) {
-            $shop = new Shop($idShop);
-        } else {
-            $shop = Context::getContext()->shop;
-        }
-        if ($relativeProtocol) {
-            $base = '//'.($ssl && $this->ssl_enable ? $shop->domain_ssl : $shop->domain);
-        } else {
-            $base = (($ssl && $this->ssl_enable) ? 'https://'.$shop->domain_ssl : 'http://'.$shop->domain);
-        }
-
-        $orginalPsLink = $base.$shop->getBaseURI();
-
-        $new_extension = Db::getInstance()->getRow(
-            '
-            SELECT *
-            FROM `'._DB_PREFIX_.'languageperdomain`
-            WHERE `lang_id` = '.(int)Context::getContext()->language->id.'
-            AND `target_replace` = '.(int)Context::getContext()->shop->id.'
-            '
-        );
-
-        $controller = Dispatcher::getInstance()->getController();
-        if ($new_extension && $controller != 'AdminOrders') {
-            $LanguagePerDomainLink = str_replace(parse_url($orginalPsLink)["host"], $new_extension["new_target"], $orginalPsLink);
-            return $LanguagePerDomainLink;
-        } else {
-            return $orginalPsLink;
-        }
+	    $link = parent::getBaseLink( $idShop, $ssl, $relativeProtocol );
+		return self::translateDomain( $link, null, $idShop );
     }
 
     /**
-     * @param null $idLang
-     * @param Context|null $context
-     * @param null $idShop
-     *
-     * @return string
+     * @inheritDoc
      */
     protected function getLangLink($idLang = null, Context $context = null, $idShop = null)
     {
         return '';
     }
 
-    public function getImageLink($name, $ids, $type = null)
-    {
-        $notDefault = false;
-        $moduleManagerBuilder = ModuleManagerBuilder::getInstance();
-        $moduleManager = $moduleManagerBuilder->build();
-        static $watermarkLogged = null;
-        static $watermarkHash = null;
-        static $psLegacyImages = null;
-        if ($watermarkLogged === null) {
-            $watermarkLogged = Configuration::get('WATERMARK_LOGGED');
-            $watermarkHash = Configuration::get('WATERMARK_HASH');
-            $psLegacyImages = Configuration::get('PS_LEGACY_IMAGES');
-        }
+	/**
+	 * @inheritDoc
+	 */
+	public function getProductLink( $product, $alias = null, $category = null, $ean13 = null, $idLang = null, $idShop = null, $idProductAttribute = null, $force_routes = false, $relativeProtocol = false, $withIdInAnchor = false, $extraParams = [], bool $addAnchor = true ) {
+		$link = parent::getProductLink( $product, $alias, $category, $ean13, $idLang, $idShop, $idProductAttribute, $force_routes, $relativeProtocol, $withIdInAnchor, $extraParams, $addAnchor );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
 
-        // Check if module is installed, enabled, customer is logged in and watermark logged option is on
-        if (!empty($type) && $watermarkLogged &&
-            ($moduleManager->isInstalled('watermark') && $moduleManager->isEnabled('watermark')) &&
-            isset(Context::getContext()->customer->id)
-        ) {
-            $type .= '-' . $watermarkHash;
-        }
+	/**
+	 * @inheritDoc
+	 */
+	public function getCategoryLink( $category, $alias = null, $idLang = null, $selectedFilters = null, $idShop = null, $relativeProtocol = false ) {
+		$link = parent::getCategoryLink( $category, $alias, $idLang, $selectedFilters, $idShop, $relativeProtocol );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
 
-        // legacy mode or default image
-        $theme = ((Shop::isFeatureActive() && file_exists(_PS_PROD_IMG_DIR_ . $ids . ($type ? '-' . $type : '') . '-' . Context::getContext()->shop->theme_name . '.jpg')) ? '-' . Context::getContext()->shop->theme_name : '');
-        if (($psLegacyImages
-                && (file_exists(_PS_PROD_IMG_DIR_ . $ids . ($type ? '-' . $type : '') . $theme . '.jpg')))
-            || ($notDefault = strpos($ids, 'default') !== false)) {
-            if ($this->allow == 1 && !$notDefault) {
-                $uriPath = __PS_BASE_URI__ . $ids . ($type ? '-' . $type : '') . $theme . '/' . $name . '.jpg';
-            } else {
-                $uriPath = _THEME_PROD_DIR_ . $ids . ($type ? '-' . $type : '') . $theme . '.jpg';
-            }
-        } else {
-            // if ids if of the form id_product-id_image, we want to extract the id_image part
-            $splitIds = explode('-', $ids);
-            $idImage = (isset($splitIds[1]) ? $splitIds[1] : $splitIds[0]);
-            $theme = ((Shop::isFeatureActive() && file_exists(_PS_PROD_IMG_DIR_ . Image::getImgFolderStatic($idImage) . $idImage . ($type ? '-' . $type : '') . '-' . (int) Context::getContext()->shop->theme_name . '.jpg')) ? '-' . Context::getContext()->shop->theme_name : '');
-            if ($this->allow == 1) {
-                $uriPath = __PS_BASE_URI__ . $idImage . ($type ? '-' . $type : '') . $theme . '/' . $name . '.jpg';
-            } else {
-                $uriPath = _THEME_PROD_DIR_ . Image::getImgFolderStatic($idImage) . $idImage . ($type ? '-' . $type : '') . $theme . '.jpg';
-            }
-        }
-        return $this->getBaseLink() . $uriPath;
-    }
+	/**
+	 * @inheritDoc
+	 */
+	public function getCMSLink( $cms, $alias = null, $ssl = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
+		$link = parent::getCMSLink( $cms, $alias, $ssl, $idLang, $idShop, $relativeProtocol );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getCMSCategoryLink( $cmsCategory, $alias = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
+		$link = parent::getCMSCategoryLink( $cmsCategory, $alias, $idLang, $idShop, $relativeProtocol );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getPageLink( $controller, $ssl = null, $idLang = null, $request = null, $requestUrlEncode = false, $idShop = null, $relativeProtocol = false ) {
+		$link = parent::getPageLink( $controller, $ssl, $idLang, $request, $requestUrlEncode, $idShop, $relativeProtocol );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getManufacturerLink( $manufacturer, $alias = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
+		$link = parent::getManufacturerLink( $manufacturer, $alias, $idLang, $idShop, $relativeProtocol );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getSupplierLink( $supplier, $alias = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
+		$link = parent::getSupplierLink( $supplier, $alias, $idLang, $idShop, $relativeProtocol );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getModuleLink( $module, $controller = 'default', array $params = [], $ssl = null, $idLang = null, $idShop = null, $relativeProtocol = false ) {
+		$link = parent::getModuleLink( $module, $controller, $params, $ssl, $idLang, $idShop, $relativeProtocol );
+		return ( $idLang ) ? self::translateDomain( $link, $idLang, $idShop ) : $link;
+	}
 }

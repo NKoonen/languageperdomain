@@ -35,11 +35,14 @@ class Languageperdomain extends Module implements WidgetInterface
 	protected $output = '';
 	private $templateFile;
 
+	/**
+	 * @inheritDoc
+	 */
 	public function __construct()
 	{
 		$this->name = 'languageperdomain';
 		$this->tab = 'administration';
-		$this->version = '1.0.7';
+		$this->version = '1.1.0';
 		$this->author = 'Inform-All';
 		$this->bootstrap = TRUE;
 		$this->need_instance = 0;
@@ -52,15 +55,23 @@ class Languageperdomain extends Module implements WidgetInterface
 		parent::__construct();
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function install()
 	{
 		include(dirname(__FILE__).'/sql/install.php');
 
 		return parent::install() &&
-			$this->registerHook('header') &&
-			$this->registerHook('displayTop');
+			$this->registerHook( 'header' ) &&
+			$this->registerHook( 'displayTop' ) &&
+			$this->registerHook( 'actionFrontControllerSetVariables' ) &&
+			$this->registerHook( 'actionHtaccessCreate' );
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function uninstall()
 	{
 		include(dirname(__FILE__).'/sql/uninstall.php');
@@ -68,6 +79,32 @@ class Languageperdomain extends Module implements WidgetInterface
 		return parent::uninstall();
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @param Context $context
+	 * @return bool
+	 */
+	public function isAdmin( $context = null ) {
+		if ( ! $context instanceof Context ) {
+			$context = $this->context;
+		}
+
+		if ( $context->controller instanceof Controller ) {
+			if ( $context->controller instanceof AdminController ) {
+				return true;
+			}
+			$controller_type = $context->controller->controller_type;
+			if ( $controller_type && true === stripos( $controller_type, 'admin' ) ) {
+				return true;
+			}
+		}
+
+		return defined( '_PS_ADMIN_DIR_' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public function renderWidget($hookName = null, array $configuration = [])
 	{
 		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
@@ -81,6 +118,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		return FALSE;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function getWidgetVariables($hookName = null, array $configuration = [])
 	{
 		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
@@ -109,97 +149,210 @@ class Languageperdomain extends Module implements WidgetInterface
 		);
 	}
 
+	/**
+	 * @return string
+	 */
 	private function getNameSimple($name)
 	{
 		return preg_replace('/\s\(.*\)$/', '', $name);
 	}
 
+	/**
+	 * @since 1.1.0
+	 * @return array
+	 */
+	public function getDomains() {
+		return Db::getInstance()->executeS(
+			'
+            SELECT *
+            FROM `'._DB_PREFIX_.'languageperdomain`
+            '
+		);
+	}
+
+	/**
+	 * @since 1.1.0
+	 * @return string|array
+	 */
+	public function getLangDomain( $full = false, $idLang = null, $idShop = null )
+	{
+		if ( ! $idLang ) {
+			$idLang = $this->context->language->id;
+		}
+		if ( ! $idShop ) {
+			$idShop = $this->context->shop->id;
+		}
+
+		$result = Db::getInstance()->getRow(
+			'
+            SELECT *
+            FROM `'._DB_PREFIX_.'languageperdomain`
+            WHERE `lang_id` = '.(int)$idLang.'
+            AND `target_replace` = '.(int)$idShop.'
+            '
+		);
+
+		if ( $full ) {
+			return $result;
+		}
+		return $result['new_target'];
+	}
+
+	/**
+	 * @since 1.1.0
+	 * @param string $url
+	 * @param int $idLang
+	 * @param int $idShop
+	 * @return string
+	 */
+	public function replaceDomain( $url, $idLang = null, $idShop = null )
+	{
+		// Only run in front-end context.
+		if ( $this->isAdmin() ) {
+			return $url;
+		}
+
+		if ( false === strpos( $url, '//' ) ) {
+			// No protocol.
+			$url = explode( '/', $url );
+			$domain = $url[0];
+			$url = implode( '/', $url );
+		} else {
+			$parts = parse_url( $url );
+			if ( empty( $parts['host'] ) ) {
+				return $url;
+			}
+			$domain = $parts['host'];
+		}
+
+		return str_replace( $domain, $this->getLangDomain( false, $idLang, $idShop ), $url );
+	}
+
+	/**
+	 * @since 1.1.0
+	 * @param array $params
+	 */
+	public function hookActionFrontControllerSetVariables( $params )
+	{
+		if ( empty( $params['templateVars'] )) {
+			return;
+		}
+		$vars = $params['templateVars'];
+
+		if ( empty( $vars['urls'] ) ) {
+			return;
+		}
+
+		$urls = $vars['urls'];
+
+		$replace = array(
+			'base_url',
+			'current_url',
+			'shop_domain_url',
+		);
+
+		foreach ( $urls as $key => $url ) {
+			if ( in_array( $key, $replace, true ) ) {
+				$urls[ $key ] = $this->replaceDomain( $url );
+			}
+		}
+
+		$params['templateVars']['urls'] = $urls;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public function getContent()
 	{
 		$output = null;
 		if (Tools::isSubmit('submit'.$this->name)) {
-			$languages = Language::getLanguages(TRUE, $this->context->shop->id);
+
+			$shopId = $this->context->shop->id;
+			$languages = Language::getLanguages(TRUE, $shopId);
 			if (count($languages) <= 0) {
 				$output .= $this->displayError($this->l('No active languages'));
-			}
-			foreach ($languages as $lang) {
-				$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
-				if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
-					$this->updatePSURL($updatedTarget, $lang["id_lang"]);
-					$this->getNewTargetOfLang($lang["id_lang"]) ? $this->updateDomain(
-						$updatedTarget,
-						$lang["id_lang"]
-					) : $this->createDomain($updatedTarget, $lang["id_lang"]);
-				} else {
-					$output .= $this->displayError(
-						$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
-					);
+			} else {
+				foreach ($languages as $lang) {
+					$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
+					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
+						$this->updateDomain( $updatedTarget, $lang["id_lang"], $shopId );
+					} else {
+						$output .= $this->displayError(
+							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
+						);
+					}
 				}
+				$output .= $this->displayConfirmation($this->l('Settings updated'));
 			}
-			$output .= $this->displayConfirmation($this->l('Settings updated'));
 		}
 
 		return $output.$this->displayForm();
 	}
 
-	public function updatePSURL($updatedTarget, $langId)
+	/**
+	 * @throws PrestaShopDatabaseException
+	 *
+	 * @param string $updatedTarget
+	 * @param int $langId
+	 * @param int $shopId
+	 *
+	 * @return bool
+	 */
+	public function updateDomain( $updatedTarget, $langId, $shopId )
 	{
-		$oldDomain = $this->getNewTargetOfLang($langId);
-		$result = $oldDomain ? Db::getInstance()->update(
-			'shop_url',
-			array(
-				'domain' => pSQL($updatedTarget),
-				'domain_ssl' => pSQL($updatedTarget),
-			),
-			'domain = "'.pSQL($oldDomain).'" AND id_shop = '.(int)Context::getContext()->shop->id.''
-		) :
+		$domain = $this->getLangDomain( false, $langId );
+		$updatedTarget = pSQL($updatedTarget);
+		$langId = (int) $langId;
+		$shopId = (int) $shopId;
+
+		if ( $domain ) {
+			// Update PS shop URL's.
+			Db::getInstance()->update(
+				'shop_url',
+				array(
+					'domain'     => $updatedTarget,
+					'domain_ssl' => $updatedTarget,
+				),
+				'domain = "'.pSQL($domain).'" AND id_shop = '. $shopId.''
+			);
+			// Update lang-per-domain table.
+			Db::getInstance()->update(
+				'languageperdomain',
+				array(
+					'new_target' => $updatedTarget,
+				),
+				'lang_id = '.$langId.' AND target_replace = '.$shopId.''
+			);
+		} else {
+			// Create domain in PS shop URL's.
 			Db::getInstance()->insert(
 				'shop_url',
 				array(
-					'domain' => pSQL($updatedTarget),
-					'domain_ssl' => pSQL($updatedTarget),
-					'id_shop' => (int)Context::getContext()->shop->id,
-					'main' => (int)1,
-					'active' => (int)1,
+					'domain'     => $updatedTarget,
+					'domain_ssl' => $updatedTarget,
+					'id_shop'    => $shopId,
+					'main'       => 1,
+					'active'     => 1,
 				)
 			);
+			// Create domain in lang-per-domain table.
+			Db::getInstance()->insert(
+				'languageperdomain',
+				array(
+					'lang_id'        => $langId,
+					'new_target'     => $updatedTarget,
+					'target_replace' => $shopId,
+				)
+			);
+		}
 	}
 
-	public function getNewTargetOfLang($langId)
-	{
-		return Db::getInstance()->getValue(
-			'SELECT `new_target` FROM `'._DB_PREFIX_.'languageperdomain` WHERE `lang_id` = '.(int)$langId.' AND `target_replace` = '.(int)Context::getContext(
-			)->shop->id.''
-		);
-	}
-
-	public function updateDomain($updatedTarget, $langId)
-	{
-
-		$result = Db::getInstance()->update(
-			'languageperdomain',
-			array(
-				'new_target' => pSQL($updatedTarget),
-			),
-			'lang_id = '.(int)$langId.' AND target_replace = '.(int)Context::getContext()->shop->id.''
-		);
-	}
-
-	public function createDomain($updatedTarget, $langId)
-	{
-		$createNew = Db::getInstance()->insert(
-			'languageperdomain',
-			array(
-				'lang_id' => (int)$langId,
-				'new_target' => pSQL($updatedTarget),
-				'target_replace' => (int)Context::getContext()->shop->id,
-			)
-		);
-	}
-
+	/**
+	 * @return string
+	 */
 	public function displayForm()
 	{
-
 		// Get default language
 		$defaultLang = (int)Configuration::get('PS_LANG_DEFAULT');
 
@@ -274,5 +427,32 @@ class Languageperdomain extends Module implements WidgetInterface
 
 
 		return $helper->generateForm($fieldsForm);
+	}
+
+	/**
+	 * @since 1.1.0
+	 * Make sure translation domains are accepted for media URL's.
+	 */
+	public function hookActionHtaccessCreate() {
+		if (Shop::isFeatureActive() || Tools::hasMediaServer()) {
+			return;
+		}
+
+		$path = _PS_ROOT_DIR_ . '/.htaccess';
+
+		$content = file_get_contents($path);
+
+		$domains = $this->getDomains();
+		$domain_cond = '';
+		foreach ( $domains as $domain ) {
+			$domain_cond .= 'RewriteCond %{HTTP_HOST} ^' . $domain['new_target'] . '$ [OR]' . PHP_EOL;
+		}
+
+		$find = 'RewriteCond %{HTTP_HOST} ^';
+		$replace = $domain_cond . $find;
+
+		$content = str_replace( $find, $replace, $content );
+
+		file_put_contents( $path, $content );
 	}
 }

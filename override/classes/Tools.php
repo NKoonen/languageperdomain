@@ -26,52 +26,109 @@
 
 class Tools extends ToolsCore
 {
-    /**
-     * Get the language id according to the url
-     *
-     * @param Context|null $context
-     *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     */
-    public static function switchLanguage(Context $context = null)
-    {
-        if (null === $context) {
-            $context = Context::getContext();
-        }
-        if (!isset($context->cookie)) {
-            return;
-        }
-        if (($iso = Tools::getValue('isolang')) &&
-            Validate::isLanguageIsoCode($iso) &&
-            ($id_lang = (int)Language::getIdByIso($iso))
-        ) {
-            $_GET['id_lang'] = $id_lang;
-        }
+	/**
+	 * Get the language id according to the url
+	 *
+	 * @inheritDoc
+	 */
+	public static function switchLanguage(Context $context = null)
+	{
+		/** @var Languageperdomain $languageperdomain */
+		$languageperdomain = Module::getInstanceByName('languageperdomain');
+		if ( ! $languageperdomain ) {
+			parent::switchLanguage();
+			return;
+		}
 
-        $newLanguageId = 0;
-        $curUrl = Tools::getHttpHost();
+		if (null === $context) {
+			$context = Context::getContext();
+		}
+		if (!isset($context->cookie)) {
+			return;
+		}
+		if (($iso = Tools::getValue('isolang')) &&
+			Validate::isLanguageIsoCode($iso) &&
+			($id_lang = (int)Language::getIdByIso($iso))
+		) {
+			$_GET['id_lang'] = $id_lang;
+		}
 
-        $allExtensions = Db::getInstance()->executeS(
-            '
-            SELECT *
-            FROM `'._DB_PREFIX_.'languageperdomain`
-            '
-        );
-        foreach ($allExtensions as $extension) {
-            if (urlencode(urldecode($curUrl)) === $extension["new_target"]) {
-                $newLanguageId = (int)$extension["lang_id"];
-            }
-        }
-        if (Validate::isUnsignedId($newLanguageId) && $newLanguageId !== 0 && $context->cookie->id_lang !== $newLanguageId)
-        {
-            $context->cookie->id_lang = $newLanguageId;
-            $language = new Language($newLanguageId);
-            if (Validate::isLoadedObject($language) && $language->active && $language->isAssociatedToShop()) {
-                $context->language = $language;
-            }
-        }
+		$newLanguageId = 0;
+		$curUrl = urlencode( urldecode( Tools::getHttpHost() ) );
 
-        Tools::setCookieLanguage($context->cookie);
-    }
+		$allExtensions = $languageperdomain->getDomains();
+
+		foreach ($allExtensions as $extension) {
+			if ( $curUrl === $extension['new_target'] ) {
+				$newLanguageId = (int) $extension['lang_id'];
+				break;
+			}
+		}
+
+		if ( 0 < $newLanguageId && $context->cookie->id_lang !== $newLanguageId )
+		{
+			$language = new Language( $newLanguageId );
+			if ( Validate::isLoadedObject($language) && $language->active && $language->isAssociatedToShop() ) {
+				$context->language = $language;
+				$context->cookie->id_lang = $newLanguageId;
+			}
+		}
+
+		Tools::setCookieLanguage($context->cookie);
+	}
+
+	/**
+	 * Replace media server URL with translation domain if no media servers are set.
+	 * @since 1.1.0
+	 * @inheritDoc
+	 */
+	public static function getMediaServer(string $filename): string
+	{
+		$url = parent::getMediaServer( $filename );
+
+		if ( ! self::hasMediaServer() ) {
+
+			/** @var Languageperdomain $languageperdomain */
+			$languageperdomain = Module::getInstanceByName('languageperdomain');
+			if ( $languageperdomain ) {
+				return $languageperdomain->replaceDomain( $url );
+			}
+		}
+
+		return $url;
+	}
+
+	/**
+	 * @since 1.1.0
+	 * @inheritDoc
+	 */
+	public static function getShopDomain($http = false, $entities = false)
+	{
+		$domain = parent::getShopDomain( $http, $entities );
+
+		/** @var Languageperdomain $languageperdomain */
+		$languageperdomain = Module::getInstanceByName('languageperdomain');
+		if ( $languageperdomain ) {
+			return $languageperdomain->replaceDomain( $domain );
+		}
+
+		return $domain;
+	}
+
+	/**
+	 * @since 1.1.0
+	 * @inheritDoc
+	 */
+	public static function getShopDomainSsl($http = false, $entities = false)
+	{
+		$domain = parent::getShopDomainSsl( $http, $entities );
+
+		/** @var Languageperdomain $languageperdomain */
+		$languageperdomain = Module::getInstanceByName('languageperdomain');
+		if ( $languageperdomain ) {
+			return $languageperdomain->replaceDomain( $domain );
+		}
+
+		return $domain;
+	}
 }
