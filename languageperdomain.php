@@ -203,12 +203,13 @@ class Languageperdomain extends Module implements WidgetInterface
 	 * @param string $url
 	 * @param int $idLang
 	 * @param int $idShop
+	 * @param bool $force
 	 * @return string
 	 */
-	public function replaceDomain( $url, $idLang = null, $idShop = null )
+	public function replaceDomain( $url, $idLang = null, $idShop = null, $force = false )
 	{
 		// Only run in front-end context.
-		if ( $this->isAdmin() ) {
+		if ( ! $force && $this->isAdmin() ) {
 			return $url;
 		}
 
