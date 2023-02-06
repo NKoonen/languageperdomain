@@ -43,7 +43,7 @@ class Link extends LinkCore
 			$languageperdomain = Module::getInstanceByName('languageperdomain');
 		}
 		if ( $languageperdomain ) {
-			return $languageperdomain->replaceDomain( $link, $idLang, $idShop );
+			return $languageperdomain->replaceDomain( $link, $idLang, $idShop, true );
 		}
 		return $link;
 	}
