@@ -30,7 +30,6 @@ use PrestaShop\PrestaShop\Core\Module\WidgetInterface;
 
 class Languageperdomain extends Module implements WidgetInterface
 {
-	public $table = '';
 	protected $output = '';
 	private $templateFile;
 
@@ -52,9 +51,11 @@ class Languageperdomain extends Module implements WidgetInterface
 		$this->confirmUninstall = $this->l('Are you sure about disabling Language per domain?');
 		$this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
 
-		$this->table = _DB_PREFIX_ . $this->name;
-
 		parent::__construct();
+	}
+
+	public static function getTableName() {
+		return _DB_PREFIX_ . 'languageperdomain';
 	}
 
 	/**
@@ -171,7 +172,7 @@ class Languageperdomain extends Module implements WidgetInterface
 			$where = 'WHERE `active` = 1';
 		}
 		return Db::getInstance()->executeS(
-			'SELECT * FROM `'.$this->table.'`' . $where
+			'SELECT * FROM `'.self::getTableName().'`' . $where
 		);
 	}
 
@@ -191,7 +192,7 @@ class Languageperdomain extends Module implements WidgetInterface
 		$result = Db::getInstance()->getRow(
 			'
             SELECT *
-            FROM `'.$this->table.'`
+            FROM `'.self::getTableName().'`
             WHERE `lang_id` = '.(int)$idLang.'
             AND `target_replace` = '.(int)$idShop.'
             '
