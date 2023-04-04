@@ -127,7 +127,8 @@ class Languageperdomain extends Module implements WidgetInterface
 		foreach ($languages as &$lang) {
 			$lang['name_simple'] = $this->getNameSimple($lang['name']);
 		}
-		$allExtensions = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'languageperdomain` WHERE `active` = 1');
+
+		$allExtensions = $this->getDomains( true );
 
 		$toReplace = "";
 		foreach ($allExtensions as $ext) {
@@ -158,14 +159,19 @@ class Languageperdomain extends Module implements WidgetInterface
 
 	/**
 	 * @since 1.1.0
+	 * @param bool $active Return only active domains?
 	 * @return array
 	 */
-	public function getDomains() {
+	public function getDomains( $activeOnly = false ) {
+		$where = '';
+		if ( $activeOnly ) {
+			$where = 'WHERE `active` = 1';
+		}
 		return Db::getInstance()->executeS(
 			'
             SELECT *
             FROM `'._DB_PREFIX_.'languageperdomain`
-            '
+            ' . $where
 		);
 	}
 
