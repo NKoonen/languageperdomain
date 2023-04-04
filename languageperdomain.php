@@ -64,7 +64,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	public function install()
 	{
 		$table = self::getTableName();
-		include(dirname(__FILE__).'/sql/install.php');
+		include dirname(__FILE__) . '/sql/install.php';
 
 		return parent::install() &&
 			$this->registerHook( 'header' ) &&
@@ -79,7 +79,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	public function uninstall()
 	{
 		$table = self::getTableName();
-		include(dirname(__FILE__).'/sql/uninstall.php');
+		include dirname(__FILE__) . '/sql/uninstall.php';
 
 		return parent::uninstall();
 	}
@@ -112,12 +112,12 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function renderWidget($hookName = null, array $configuration = [])
 	{
-		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
+		$languages = Language::getLanguages(true, $this->context->shop->id);
 
-		if (1 < count($languages)) {
-			$this->smarty->assign($this->getWidgetVariables($hookName, $configuration));
+		if ( 1 < count( $languages ) ) {
+			$this->smarty->assign( $this->getWidgetVariables( $hookName, $configuration ) );
 
-			return $this->fetch($this->templateFile);
+			return $this->fetch( $this->templateFile );
 		}
 
 		return FALSE;
@@ -128,7 +128,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function getWidgetVariables($hookName = null, array $configuration = [])
 	{
-		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
+		$languages = Language::getLanguages( true, $this->context->shop->id );
 
 		foreach ($languages as &$lang) {
 			$lang['name_simple'] = $this->getNameSimple($lang['name']);
@@ -136,10 +136,10 @@ class Languageperdomain extends Module implements WidgetInterface
 
 		$allExtensions = $this->getDomains( true );
 
-		$toReplace = "";
+		$toReplace = '';
 		foreach ($allExtensions as $ext) {
-			if ($ext["lang_id"] == $this->context->language->id) {
-				$toReplace = $ext["new_target"];
+			if ( $ext['lang_id'] == $this->context->language->id ) {
+				$toReplace = $ext['new_target'];
 			}
 		}
 
@@ -296,10 +296,11 @@ class Languageperdomain extends Module implements WidgetInterface
 				$output .= $this->displayError($this->l('No active languages'));
 			} else {
 				foreach ($languages as $lang) {
-					$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
-					$targetActive = Tools::getValue('languageperdomainID'.$lang["id_lang"].'active');
+					$updatedTarget = Tools::getValue( 'languageperdomainID' . $lang['id_lang'] );
+					$targetActive = Tools::getValue( 'languageperdomainID' . $lang['id_lang'] . 'active' );
+
 					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
-						$this->updateDomain( $updatedTarget, $lang["id_lang"], $shopId, $targetActive );
+						$this->updateDomain( $updatedTarget, $lang['id_lang'], $shopId, $targetActive );
 					} else {
 						$output .= $this->displayError(
 							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
@@ -338,7 +339,7 @@ class Languageperdomain extends Module implements WidgetInterface
 					'domain'     => $updatedTarget,
 					'domain_ssl' => $updatedTarget,
 				),
-				'domain = "'.pSQL($domain).'" AND id_shop = '. $shopId.''
+				'domain = "' . pSQL($domain) . '" AND id_shop = ' . $shopId
 			);
 			// Update lang-per-domain table.
 			Db::getInstance()->update(
@@ -347,7 +348,7 @@ class Languageperdomain extends Module implements WidgetInterface
 					'new_target' => $updatedTarget,
 					'active'     => (bool) $active,
 				),
-				'lang_id = '.$langId.' AND target_replace = '.$shopId.''
+				'lang_id = ' . $langId . ' AND target_replace = ' . $shopId
 			);
 		} else {
 			// Create domain in PS shop URL's.
@@ -391,8 +392,8 @@ class Languageperdomain extends Module implements WidgetInterface
 				$domainInputArray,
 				[
 					'type' => 'text',
-					'label' => $this->l($lang["name"]),
-					'name' => 'languageperdomainID'.$lang["id_lang"],
+					'label' => $this->l( $lang['name'] ),
+					'name' => 'languageperdomainID' . $lang['id_lang'],
 					'size' => 20,
 					'required' => TRUE,
 					'value' => "emptyForNow",
@@ -400,7 +401,7 @@ class Languageperdomain extends Module implements WidgetInterface
 				[
 					'type' => 'switch',
 					'label' => $this->l('Show on storefront?'),
-					'name' => 'languageperdomainID'.$lang["id_lang"].'active',
+					'name' => 'languageperdomainID' . $lang['id_lang'] . 'active',
 					'is_bool' => true,
 					'values' => array(
 						array(
@@ -464,10 +465,10 @@ class Languageperdomain extends Module implements WidgetInterface
 
 
 		foreach ($languages as $lang) {
-			$domain = $this->getDomain( $lang["id_lang"], Context::getContext()->shop->id );
+			$domain = $this->getDomain( $lang['id_lang'], Context::getContext()->shop->id );
 			if ( $domain ) {
-				$helper->fields_value['languageperdomainID'.$lang["id_lang"]] = $domain['new_target'];
-				$helper->fields_value['languageperdomainID'.$lang["id_lang"].'active'] = $domain['active'];
+				$helper->fields_value[ 'languageperdomainID' . $lang['id_lang'] ] = $domain['new_target'];
+				$helper->fields_value[ 'languageperdomainID' . $lang['id_lang'] . 'active' ] = $domain['active'];
 			}
 		}
 
