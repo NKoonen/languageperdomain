@@ -127,7 +127,7 @@ class Languageperdomain extends Module implements WidgetInterface
 		foreach ($languages as &$lang) {
 			$lang['name_simple'] = $this->getNameSimple($lang['name']);
 		}
-		$allExtensions = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'languageperdomain`');
+		$allExtensions = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'languageperdomain` WHERE `active` = 1');
 
 		$toReplace = "";
 		foreach ($allExtensions as $ext) {
