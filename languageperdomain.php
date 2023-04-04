@@ -40,7 +40,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	{
 		$this->name = 'languageperdomain';
 		$this->tab = 'administration';
-		$this->version = '1.1.1';
+		$this->version = '1.2.0';
 		$this->author = 'Inform-All';
 		$this->bootstrap = TRUE;
 		$this->need_instance = 0;
@@ -50,6 +50,7 @@ class Languageperdomain extends Module implements WidgetInterface
 		$this->templateFile = 'module:languageperdomain/views/templates/hook/languageperdomain_select.tpl';
 		$this->confirmUninstall = $this->l('Are you sure about disabling Language per domain?');
 		$this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+
 		parent::__construct();
 	}
 
