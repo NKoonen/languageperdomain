@@ -42,7 +42,10 @@ function upgrade_module_1_2_0($module)
 
 	$sql = array();
 
+	// Add active column.
 	$sql[] = 'ALTER TABLE `'._DB_PREFIX_.'languageperdomain` ADD `active` int(1)';
+	// Set all current rows to active for backwards compatibility.
+	$sql[] = 'UPDATE `'._DB_PREFIX_.'languageperdomain` SET `active` = 1';
 
 	foreach ($sql as $query) {
 		if (Db::getInstance()->execute($query) == false) {
