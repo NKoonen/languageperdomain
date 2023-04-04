@@ -275,8 +275,9 @@ class Languageperdomain extends Module implements WidgetInterface
 			} else {
 				foreach ($languages as $lang) {
 					$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
+					$targetActive = Tools::getValue('languageperdomainID'.$lang["id_lang"].'active');
 					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
-						$this->updateDomain( $updatedTarget, $lang["id_lang"], $shopId );
+						$this->updateDomain( $updatedTarget, $lang["id_lang"], $shopId, $targetActive );
 					} else {
 						$output .= $this->displayError(
 							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
@@ -296,10 +297,11 @@ class Languageperdomain extends Module implements WidgetInterface
 	 * @param string $updatedTarget
 	 * @param int $langId
 	 * @param int $shopId
+	 * @param bool $active
 	 *
 	 * @return bool
 	 */
-	public function updateDomain( $updatedTarget, $langId, $shopId )
+	public function updateDomain( $updatedTarget, $langId, $shopId, $active )
 	{
 		$domain = $this->getLangDomain( false, $langId );
 		$updatedTarget = pSQL($updatedTarget);
@@ -321,6 +323,7 @@ class Languageperdomain extends Module implements WidgetInterface
 				'languageperdomain',
 				array(
 					'new_target' => $updatedTarget,
+					'active'     => (bool) $active,
 				),
 				'lang_id = '.$langId.' AND target_replace = '.$shopId.''
 			);
@@ -343,6 +346,7 @@ class Languageperdomain extends Module implements WidgetInterface
 					'lang_id'        => $langId,
 					'new_target'     => $updatedTarget,
 					'target_replace' => $shopId,
+					'active'         => (bool) $active,
 				)
 			);
 		}
