@@ -31,7 +31,9 @@
  */
 $sql = array();
 
-$table = _DB_PREFIX_ . 'languageperdomain';
+if ( ! isset( $table ) ) {
+	$table = _DB_PREFIX_ . 'languageperdomain';
+}
 
 $sql[] = 'DROP TABLE IF EXISTS `'.$table.'`';
 

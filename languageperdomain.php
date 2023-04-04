@@ -63,6 +63,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function install()
 	{
+		$table = self::getTableName();
 		include(dirname(__FILE__).'/sql/install.php');
 
 		return parent::install() &&
@@ -77,6 +78,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function uninstall()
 	{
+		$table = self::getTableName();
 		include(dirname(__FILE__).'/sql/uninstall.php');
 
 		return parent::uninstall();

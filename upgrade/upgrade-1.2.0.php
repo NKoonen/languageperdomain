@@ -42,7 +42,10 @@ function upgrade_module_1_2_0($module)
 
 	$sql = array();
 
-	$table = _DB_PREFIX_ . 'languageperdomain';
+	/**
+	 * @var Languageperdomain $module;
+	 */
+	$table = $module::getTableName();
 
 	// Add active column.
 	$sql[] = 'ALTER TABLE `'.$table.'` ADD `active` int(1)';
