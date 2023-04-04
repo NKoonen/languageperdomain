@@ -370,6 +370,11 @@ class Languageperdomain extends Module implements WidgetInterface
 					'size' => 20,
 					'required' => TRUE,
 					'value' => "emptyForNow",
+				],
+				[
+					'type' => 'switch',
+					'label' => $this->l('Show on storefront?'),
+					'name' => 'languageperdomainID'.$lang["id_lang"].'active',
 				]
 			);
 		}
