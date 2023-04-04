@@ -159,7 +159,7 @@ class Languageperdomain extends Module implements WidgetInterface
 
 	/**
 	 * @since 1.1.0
-	 * @param bool $active Return only active domains?
+	 * @param bool $activeOnly Return only active domains?
 	 * @return array
 	 */
 	public function getDomains( $activeOnly = false ) {
