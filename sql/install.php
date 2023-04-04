@@ -31,6 +31,7 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'languageperdomain` (
     `lang_id` int(11) NOT NULL,
     `target_replace` VARCHAR(256) NOT NULL,
     `new_target` VARCHAR(256) NOT NULL,
+    `active` int(1),
     PRIMARY KEY  (`id_languageperdomain`)
 ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 
