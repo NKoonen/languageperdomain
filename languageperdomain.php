@@ -401,7 +401,9 @@ class Languageperdomain extends Module implements WidgetInterface
 							'label' => $this->l('No')
 						)
 					)
-				]
+				],
+				// Separator.
+				[ 'type' => 'free' ]
 			);
 		}
 
