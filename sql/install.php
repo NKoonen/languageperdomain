@@ -26,7 +26,9 @@
 
 $sql = array();
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'languageperdomain` (
+$table = _DB_PREFIX_ . 'languageperdomain';
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'.$table.'` (
     `id_languageperdomain` int(11) NOT NULL AUTO_INCREMENT,
     `lang_id` int(11) NOT NULL,
     `target_replace` VARCHAR(256) NOT NULL,
