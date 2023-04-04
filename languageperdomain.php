@@ -179,7 +179,27 @@ class Languageperdomain extends Module implements WidgetInterface
 	}
 
 	/**
+	 * @since 1.2.0
+	 * @param int $idLang
+	 * @param int $idShop
+	 * @return array
+	 */
+	public function getDomain( $idLang = null, $idShop = null ) {
+		return Db::getInstance()->getRow(
+			'
+            SELECT *
+            FROM `'.self::getTableName().'`
+            WHERE `lang_id` = '.(int)$idLang.'
+            AND `target_replace` = '.(int)$idShop.'
+            '
+		);
+	}
+
+	/**
 	 * @since 1.1.0
+	 * @param bool $full
+	 * @param int $idLang
+	 * @param int $idShop
 	 * @return string|array
 	 */
 	public function getLangDomain( $full = false, $idLang = null, $idShop = null )
@@ -191,14 +211,7 @@ class Languageperdomain extends Module implements WidgetInterface
 			$idShop = $this->context->shop->id;
 		}
 
-		$result = Db::getInstance()->getRow(
-			'
-            SELECT *
-            FROM `'.self::getTableName().'`
-            WHERE `lang_id` = '.(int)$idLang.'
-            AND `target_replace` = '.(int)$idShop.'
-            '
-		);
+		$result = $this->getDomain( $idLang, $idShop );
 
 		if ( $full ) {
 			return $result;
