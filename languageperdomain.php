@@ -441,6 +441,12 @@ class Languageperdomain extends Module implements WidgetInterface
 				)->shop->id.''
 			);
 			$helper->fields_value['languageperdomainID'.$lang["id_lang"]] = $sql;
+
+			$sql = Db::getInstance()->getValue(
+				'SELECT `active` FROM `'._DB_PREFIX_.'languageperdomain` WHERE `lang_id` = '.(int)$lang["id_lang"].' AND `target_replace` = '.(int)Context::getContext(
+				)->shop->id.''
+			);
+			$helper->fields_value['languageperdomainID'.$lang["id_lang"].'active'] = $sql;
 		}
 
 
