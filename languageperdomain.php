@@ -375,6 +375,19 @@ class Languageperdomain extends Module implements WidgetInterface
 					'type' => 'switch',
 					'label' => $this->l('Show on storefront?'),
 					'name' => 'languageperdomainID'.$lang["id_lang"].'active',
+					'is_bool' => true,
+					'values' => array(
+						array(
+							'id' => 'active_on',
+							'value' => 1,
+							'label' => $this->l('Yes')
+						),
+						array(
+							'id' => 'active_off',
+							'value' => 0,
+							'label' => $this->l('No')
+						)
+					)
 				]
 			);
 		}
