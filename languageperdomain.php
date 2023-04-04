@@ -464,17 +464,11 @@ class Languageperdomain extends Module implements WidgetInterface
 
 
 		foreach ($languages as $lang) {
-			$sql = Db::getInstance()->getValue(
-				'SELECT `new_target` FROM `'._DB_PREFIX_.'languageperdomain` WHERE `lang_id` = '.(int)$lang["id_lang"].' AND `target_replace` = '.(int)Context::getContext(
-				)->shop->id.''
-			);
-			$helper->fields_value['languageperdomainID'.$lang["id_lang"]] = $sql;
-
-			$sql = Db::getInstance()->getValue(
-				'SELECT `active` FROM `'._DB_PREFIX_.'languageperdomain` WHERE `lang_id` = '.(int)$lang["id_lang"].' AND `target_replace` = '.(int)Context::getContext(
-				)->shop->id.''
-			);
-			$helper->fields_value['languageperdomainID'.$lang["id_lang"].'active'] = $sql;
+			$domain = $this->getDomain( $lang["id_lang"], Context::getContext()->shop->id );
+			if ( $domain ) {
+				$helper->fields_value['languageperdomainID'.$lang["id_lang"]] = $domain['new_target'];
+				$helper->fields_value['languageperdomainID'.$lang["id_lang"].'active'] = $domain['active'];
+			}
 		}
 
 
