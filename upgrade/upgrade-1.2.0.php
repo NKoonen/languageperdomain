@@ -24,21 +24,39 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-/**
- * In some cases you should not drop the tables.
- * Maybe the merchant will just try to reset the module
- * but does not want to loose all of the data associated to the module.
- */
-$sql = array();
-
-if ( ! isset( $table ) ) {
-	$table = _DB_PREFIX_ . 'languageperdomain';
+if (!defined('_PS_VERSION_')) {
+    exit;
 }
 
-$sql[] = 'DROP TABLE IF EXISTS `'.$table.'`';
+/**
+ * This function updates your module from previous versions to the version 1.2,
+ * usefull when you modify your database, or register a new hook ...
+ * Don't forget to create one file per version.
+ */
+function upgrade_module_1_2_0($module)
+{
+    /*
+     * Do everything you want right there,
+     * You could add a column in one of your module's tables
+     */
 
-foreach ($sql as $query) {
-    if (Db::getInstance()->execute($query) == false) {
-        return false;
-    }
+	$sql = array();
+
+	/**
+	 * @var Languageperdomain $module;
+	 */
+	$table = $module::getTableName();
+
+	// Add active column.
+	$sql[] = 'ALTER TABLE `'.$table.'` ADD `active` int(1)';
+	// Set all current rows to active for backwards compatibility.
+	$sql[] = 'UPDATE `'.$table.'` SET `active` = 1';
+
+	foreach ($sql as $query) {
+		if (Db::getInstance()->execute($query) == false) {
+			return false;
+		}
+	}
+
+	return true;
 }

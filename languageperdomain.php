@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2020 PrestaShop
+ * 2020-now Inform-All & Keraweb
  *
  * NOTICE OF LICENSE
  *
@@ -18,10 +18,8 @@
  * versions in the future. If you wish to customize PrestaShop for your
  * needs please refer to http://www.prestashop.com for more information.
  *
- * @author    PrestaShop SA <contact@prestashop.com>
- * @copyright 2007-2020 PrestaShop SA
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
+ * @author    Inform-All & Keraweb
+ * @copyright 2020-now Inform-All & Keraweb
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -42,7 +40,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	{
 		$this->name = 'languageperdomain';
 		$this->tab = 'administration';
-		$this->version = '1.1.1';
+		$this->version = '1.2.0';
 		$this->author = 'Inform-All';
 		$this->bootstrap = TRUE;
 		$this->need_instance = 0;
@@ -52,7 +50,12 @@ class Languageperdomain extends Module implements WidgetInterface
 		$this->templateFile = 'module:languageperdomain/views/templates/hook/languageperdomain_select.tpl';
 		$this->confirmUninstall = $this->l('Are you sure about disabling Language per domain?');
 		$this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+
 		parent::__construct();
+	}
+
+	public static function getTableName() {
+		return _DB_PREFIX_ . 'languageperdomain';
 	}
 
 	/**
@@ -60,7 +63,8 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function install()
 	{
-		include(dirname(__FILE__).'/sql/install.php');
+		$table = self::getTableName();
+		include dirname(__FILE__) . '/sql/install.php';
 
 		return parent::install() &&
 			$this->registerHook( 'header' ) &&
@@ -74,7 +78,8 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function uninstall()
 	{
-		include(dirname(__FILE__).'/sql/uninstall.php');
+		$table = self::getTableName();
+		include dirname(__FILE__) . '/sql/uninstall.php';
 
 		return parent::uninstall();
 	}
@@ -107,12 +112,12 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function renderWidget($hookName = null, array $configuration = [])
 	{
-		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
+		$languages = Language::getLanguages(true, $this->context->shop->id);
 
-		if (1 < count($languages)) {
-			$this->smarty->assign($this->getWidgetVariables($hookName, $configuration));
+		if ( 1 < count( $languages ) ) {
+			$this->smarty->assign( $this->getWidgetVariables( $hookName, $configuration ) );
 
-			return $this->fetch($this->templateFile);
+			return $this->fetch( $this->templateFile );
 		}
 
 		return FALSE;
@@ -123,17 +128,18 @@ class Languageperdomain extends Module implements WidgetInterface
 	 */
 	public function getWidgetVariables($hookName = null, array $configuration = [])
 	{
-		$languages = Language::getLanguages(TRUE, $this->context->shop->id);
+		$languages = Language::getLanguages( true, $this->context->shop->id );
 
 		foreach ($languages as &$lang) {
 			$lang['name_simple'] = $this->getNameSimple($lang['name']);
 		}
-		$allExtensions = Db::getInstance()->executeS('SELECT * FROM `'._DB_PREFIX_.'languageperdomain`');
 
-		$toReplace = "";
+		$allExtensions = $this->getDomains( true );
+
+		$toReplace = '';
 		foreach ($allExtensions as $ext) {
-			if ($ext["lang_id"] == $this->context->language->id) {
-				$toReplace = $ext["new_target"];
+			if ( $ext['lang_id'] == $this->context->language->id ) {
+				$toReplace = $ext['new_target'];
 			}
 		}
 
@@ -159,19 +165,41 @@ class Languageperdomain extends Module implements WidgetInterface
 
 	/**
 	 * @since 1.1.0
+	 * @param bool $activeOnly Return only active domains?
 	 * @return array
 	 */
-	public function getDomains() {
+	public function getDomains( $activeOnly = false ) {
+		$where = '';
+		if ( $activeOnly ) {
+			$where = 'WHERE `active` = 1';
+		}
 		return Db::getInstance()->executeS(
+			'SELECT * FROM `'.self::getTableName().'`' . $where
+		);
+	}
+
+	/**
+	 * @since 1.2.0
+	 * @param int $idLang
+	 * @param int $idShop
+	 * @return array
+	 */
+	public function getDomain( $idLang = null, $idShop = null ) {
+		return Db::getInstance()->getRow(
 			'
             SELECT *
-            FROM `'._DB_PREFIX_.'languageperdomain`
+            FROM `'.self::getTableName().'`
+            WHERE `lang_id` = '.(int)$idLang.'
+            AND `target_replace` = '.(int)$idShop.'
             '
 		);
 	}
 
 	/**
 	 * @since 1.1.0
+	 * @param bool $full
+	 * @param int $idLang
+	 * @param int $idShop
 	 * @return string|array
 	 */
 	public function getLangDomain( $full = false, $idLang = null, $idShop = null )
@@ -183,14 +211,7 @@ class Languageperdomain extends Module implements WidgetInterface
 			$idShop = $this->context->shop->id;
 		}
 
-		$result = Db::getInstance()->getRow(
-			'
-            SELECT *
-            FROM `'._DB_PREFIX_.'languageperdomain`
-            WHERE `lang_id` = '.(int)$idLang.'
-            AND `target_replace` = '.(int)$idShop.'
-            '
-		);
+		$result = $this->getDomain( $idLang, $idShop );
 
 		if ( $full ) {
 			return $result;
@@ -275,9 +296,11 @@ class Languageperdomain extends Module implements WidgetInterface
 				$output .= $this->displayError($this->l('No active languages'));
 			} else {
 				foreach ($languages as $lang) {
-					$updatedTarget = Tools::getValue('languageperdomainID'.$lang["id_lang"]);
+					$updatedTarget = Tools::getValue( 'languageperdomainID' . $lang['id_lang'] );
+					$targetActive = Tools::getValue( 'languageperdomainID' . $lang['id_lang'] . 'active' );
+
 					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
-						$this->updateDomain( $updatedTarget, $lang["id_lang"], $shopId );
+						$this->updateDomain( $updatedTarget, $lang['id_lang'], $shopId, $targetActive );
 					} else {
 						$output .= $this->displayError(
 							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
@@ -297,10 +320,11 @@ class Languageperdomain extends Module implements WidgetInterface
 	 * @param string $updatedTarget
 	 * @param int $langId
 	 * @param int $shopId
+	 * @param bool $active
 	 *
 	 * @return bool
 	 */
-	public function updateDomain( $updatedTarget, $langId, $shopId )
+	public function updateDomain( $updatedTarget, $langId, $shopId, $active )
 	{
 		$domain = $this->getLangDomain( false, $langId );
 		$updatedTarget = pSQL($updatedTarget);
@@ -315,15 +339,16 @@ class Languageperdomain extends Module implements WidgetInterface
 					'domain'     => $updatedTarget,
 					'domain_ssl' => $updatedTarget,
 				),
-				'domain = "'.pSQL($domain).'" AND id_shop = '. $shopId.''
+				'domain = "' . pSQL($domain) . '" AND id_shop = ' . $shopId
 			);
 			// Update lang-per-domain table.
 			Db::getInstance()->update(
 				'languageperdomain',
 				array(
 					'new_target' => $updatedTarget,
+					'active'     => (bool) $active,
 				),
-				'lang_id = '.$langId.' AND target_replace = '.$shopId.''
+				'lang_id = ' . $langId . ' AND target_replace = ' . $shopId
 			);
 		} else {
 			// Create domain in PS shop URL's.
@@ -344,6 +369,7 @@ class Languageperdomain extends Module implements WidgetInterface
 					'lang_id'        => $langId,
 					'new_target'     => $updatedTarget,
 					'target_replace' => $shopId,
+					'active'         => (bool) $active,
 				)
 			);
 		}
@@ -366,12 +392,32 @@ class Languageperdomain extends Module implements WidgetInterface
 				$domainInputArray,
 				[
 					'type' => 'text',
-					'label' => $this->l($lang["name"]),
-					'name' => 'languageperdomainID'.$lang["id_lang"],
+					'label' => $this->l( $lang['name'] ),
+					'name' => 'languageperdomainID' . $lang['id_lang'],
 					'size' => 20,
 					'required' => TRUE,
 					'value' => "emptyForNow",
-				]
+				],
+				[
+					'type' => 'switch',
+					'label' => $this->l('Show on storefront?'),
+					'name' => 'languageperdomainID' . $lang['id_lang'] . 'active',
+					'is_bool' => true,
+					'values' => array(
+						array(
+							'id' => 'active_on',
+							'value' => 1,
+							'label' => $this->l('Yes')
+						),
+						array(
+							'id' => 'active_off',
+							'value' => 0,
+							'label' => $this->l('No')
+						)
+					)
+				],
+				// Separator.
+				[ 'type' => 'free' ]
 			);
 		}
 
@@ -419,11 +465,11 @@ class Languageperdomain extends Module implements WidgetInterface
 
 
 		foreach ($languages as $lang) {
-			$sql = Db::getInstance()->getValue(
-				'SELECT `new_target` FROM `'._DB_PREFIX_.'languageperdomain` WHERE `lang_id` = '.(int)$lang["id_lang"].' AND `target_replace` = '.(int)Context::getContext(
-				)->shop->id.''
-			);
-			$helper->fields_value['languageperdomainID'.$lang["id_lang"]] = $sql;
+			$domain = $this->getDomain( $lang['id_lang'], Context::getContext()->shop->id );
+			if ( $domain ) {
+				$helper->fields_value[ 'languageperdomainID' . $lang['id_lang'] ] = $domain['new_target'];
+				$helper->fields_value[ 'languageperdomainID' . $lang['id_lang'] . 'active' ] = $domain['active'];
+			}
 		}
 
 

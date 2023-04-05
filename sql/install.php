@@ -26,11 +26,16 @@
 
 $sql = array();
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'languageperdomain` (
+if ( ! isset( $table ) ) {
+	$table = _DB_PREFIX_ . 'languageperdomain';
+}
+
+$sql[] = 'CREATE TABLE IF NOT EXISTS `'.$table.'` (
     `id_languageperdomain` int(11) NOT NULL AUTO_INCREMENT,
     `lang_id` int(11) NOT NULL,
     `target_replace` VARCHAR(256) NOT NULL,
     `new_target` VARCHAR(256) NOT NULL,
+    `active` int(1),
     PRIMARY KEY  (`id_languageperdomain`)
 ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;';
 
