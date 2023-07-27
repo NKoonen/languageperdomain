@@ -134,7 +134,7 @@ class Languageperdomain extends Module implements WidgetInterface
 			$lang['name_simple'] = $this->getNameSimple($lang['name']);
 		}
 
-		$allExtensions = $this->getDomains( true );
+		$allExtensions = $this->getDomains( true, $this->context->shop->id );
 
 		$toReplace = '';
 		foreach ($allExtensions as $ext) {
@@ -166,13 +166,22 @@ class Languageperdomain extends Module implements WidgetInterface
 	/**
 	 * @since 1.1.0
 	 * @param bool $activeOnly Return only active domains?
+	 * @param int $idShop
 	 * @return array
 	 */
-	public function getDomains( $activeOnly = false ) {
-		$where = '';
+	public function getDomains( $activeOnly = false, $idShop = null ) {
+		$where = [];
 		if ( $activeOnly ) {
-			$where = 'WHERE `active` = 1';
+			$where[] = '`active` = 1';
 		}
+		if ( $idShop ) {
+			$where[] = '`target_replace` = ' . (int) $idShop;
+		}
+
+		if ( $where ) {
+			$where = ' WHERE ' . implode( ' AND ', $where );
+		}
+
 		return Db::getInstance()->executeS(
 			'SELECT * FROM `'.self::getTableName().'`' . $where
 		);
