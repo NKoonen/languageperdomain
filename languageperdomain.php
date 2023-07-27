@@ -184,7 +184,8 @@ class Languageperdomain extends Module implements WidgetInterface
 	 * @param int $idShop
 	 * @return array
 	 */
-	public function getDomain( $idLang = null, $idShop = null ) {
+	public function getDomain( $idLang = null, $idShop = null )
+	{
 		return Db::getInstance()->getRow(
 			'
             SELECT *
@@ -234,6 +235,15 @@ class Languageperdomain extends Module implements WidgetInterface
 			return $url;
 		}
 
+		// Only allow maintenance IP's to access disabled domains.
+		if ( ! $this->isActiveDomain( $this->context->language->id, $this->context->shop->id ) ) {
+			$allowed_ips = array_map('trim', explode(',', Configuration::get('PS_MAINTENANCE_IP')));
+
+			if ( ! in_array( $_SERVER['REMOTE_ADDR'], $allowed_ips, true ) ) {
+				Tools::redirect( $url );
+			}
+		}
+
 		if ( false === strpos( $url, '//' ) ) {
 			// No protocol.
 			$url = explode( '/', $url );
@@ -248,6 +258,23 @@ class Languageperdomain extends Module implements WidgetInterface
 		}
 
 		return str_replace( $domain, $this->getLangDomain( false, $idLang, $idShop ), $url );
+	}
+
+	/**
+	 * @since 1.3.0
+	 * @param int $idLang
+	 * @param int $idShop
+	 * @return bool
+	 */
+	public function isActiveDomain( $idLang, $idShop = null )
+	{
+		$domain = $this->getDomain( $idLang, $idShop );
+
+		if ( empty( $domain ) ) {
+			return false;
+		}
+
+		return ! empty( $domain['active'] );
 	}
 
 	/**
