@@ -40,7 +40,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	{
 		$this->name = 'languageperdomain';
 		$this->tab = 'administration';
-		$this->version = '1.2.0';
+		$this->version = '1.3.0';
 		$this->author = 'Inform-All';
 		$this->bootstrap = TRUE;
 		$this->need_instance = 0;
