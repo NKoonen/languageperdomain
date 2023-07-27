@@ -51,7 +51,7 @@ class Link extends LinkCore
 	/**
 	 * @inheritDoc
      */
-    public function getBaseLink($idShop = null, $ssl = null, $relativeProtocol = false)
+    public function getBaseLink( $idShop = null, $ssl = null, $relativeProtocol = false )
     {
 	    $link = parent::getBaseLink( $idShop, $ssl, $relativeProtocol );
 		return self::translateDomain( $link, null, $idShop );
@@ -60,7 +60,7 @@ class Link extends LinkCore
     /**
      * @inheritDoc
      */
-    protected function getLangLink($idLang = null, Context $context = null, $idShop = null)
+    protected function getLangLink( $idLang = null, Context $context = null, $idShop = null )
     {
         return '';
     }
