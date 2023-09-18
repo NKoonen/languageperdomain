@@ -180,6 +180,8 @@ class Languageperdomain extends Module implements WidgetInterface
 
 		if ( $where ) {
 			$where = ' WHERE ' . implode( ' AND ', $where );
+		} else {
+			$where = '';
 		}
 
 		return Db::getInstance()->executeS(
