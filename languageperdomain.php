@@ -178,15 +178,13 @@ class Languageperdomain extends Module implements WidgetInterface
 			$where[] = '`target_replace` = ' . (int) $idShop;
 		}
 
-		if ( $where ) {
-			$where = ' WHERE ' . implode( ' AND ', $where );
-		} else {
-			$where = '';
+		$whereClause = '';
+		if (!empty($where)) {
+			$whereClause = ' WHERE ' . implode(' AND ', $where);
 		}
-
+	
 		return Db::getInstance()->executeS(
-			'SELECT * FROM `'.self::getTableName().'`' . $where
-		);
+		'SELECT * FROM `' . self::getTableName() . '`' . $whereClause);
 	}
 
 	/**
