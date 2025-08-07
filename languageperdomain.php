@@ -40,7 +40,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	{
 		$this->name = 'languageperdomain';
 		$this->tab = 'administration';
-		$this->version = '1.3.1';
+		$this->version = '2.0.0';
 		$this->author = 'Inform-All';
 		$this->bootstrap = TRUE;
 		$this->need_instance = 0;
@@ -49,7 +49,7 @@ class Languageperdomain extends Module implements WidgetInterface
 		$this->description = $this->l('Use a domain for every language, without multistore.');
 		$this->templateFile = 'module:languageperdomain/views/templates/hook/languageperdomain_select.tpl';
 		$this->confirmUninstall = $this->l('Are you sure about disabling Language per domain?');
-		$this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = ['min' => '9.0.0', 'max' => _PS_VERSION_];
 
 		parent::__construct();
 	}
@@ -67,9 +67,9 @@ class Languageperdomain extends Module implements WidgetInterface
 		include dirname(__FILE__) . '/sql/install.php';
 
 		return parent::install() &&
-			$this->registerHook( 'header' ) &&
+			$this->registerHook( 'displayHeader' ) &&
 			$this->registerHook( 'displayTop' ) &&
-			$this->registerHook( 'actionFrontControllerSetVariables' ) &&
+			$this->registerHook( 'actionFrontControllerSetVariablesBefore' ) &&
 			$this->registerHook( 'actionHtaccessCreate' );
 	}
 
@@ -130,10 +130,13 @@ class Languageperdomain extends Module implements WidgetInterface
 	{
 		$languages = Language::getLanguages( true, $this->context->shop->id );
 
-		foreach ($languages as &$lang) {
-			$lang['name_simple'] = $this->getNameSimple($lang['name']);
-		}
-
+        foreach ($languages as &$lang) {
+            if (isset($lang['name'])) {
+                $lang['name_simple'] = $this->getNameSimple($lang['name']);
+            } else {
+                $lang['name_simple'] = '';
+            }
+        }
 		$allExtensions = $this->getDomains( true, $this->context->shop->id );
 
 		$toReplace = '';
@@ -292,7 +295,7 @@ class Languageperdomain extends Module implements WidgetInterface
 	 * @since 1.1.0
 	 * @param array $params
 	 */
-	public function hookActionFrontControllerSetVariables( $params )
+	public function hookActionFrontControllerSetVariablesBefore( $params )
 	{
 		if ( empty( $params['templateVars'] )) {
 			return;
@@ -328,6 +331,7 @@ class Languageperdomain extends Module implements WidgetInterface
 		$output = null;
 		if (Tools::isSubmit('submit'.$this->name)) {
 
+            $entries = [];
 			$shopId = $this->context->shop->id;
 			$languages = Language::getLanguages(TRUE, $shopId);
 			if (count($languages) <= 0) {
@@ -336,17 +340,29 @@ class Languageperdomain extends Module implements WidgetInterface
 				foreach ($languages as $lang) {
 					$updatedTarget = Tools::getValue( 'languageperdomainID' . $lang['id_lang'] );
 					$targetActive = Tools::getValue( 'languageperdomainID' . $lang['id_lang'] . 'active' );
-
 					if (urlencode(urldecode($updatedTarget)) === $updatedTarget && $updatedTarget != null) {
 						$this->updateDomain( $updatedTarget, $lang['id_lang'], $shopId, $targetActive );
-					} else {
-						$output .= $this->displayError(
-							$this->l('Not a valid URL for '.$this->getNameSimple($lang['name']))
-						);
+                        $entries[] = [
+                            'lang_id'       => (int)$lang['id_lang'],
+                            'target_replace'=> 1,
+                            'new_target'    => $updatedTarget,
+                            'active'        => 1,
+                        ];
+                    } else {
+                        if (isset($lang['name'])) {
+                            $output .= $this->displayError(
+                                $this->l('Not a valid URL for ' . $this->getNameSimple($lang['name']))
+                            );
+                        } else {
+                            $output .= $this->displayError(
+                                $this->l('Not a valid URL for an unknown language')
+                            );
+                        }
 					}
 				}
 				$output .= $this->displayConfirmation($this->l('Settings updated'));
 			}
+            $this->syncWithShopUrl(array_column($entries, 'new_target'));
 		}
 
 		return $output.$this->displayForm();
@@ -430,8 +446,8 @@ class Languageperdomain extends Module implements WidgetInterface
 				$domainInputArray,
 				[
 					'type' => 'text',
-					'label' => $this->l( $lang['name'] ),
-					'name' => 'languageperdomainID' . $lang['id_lang'],
+                    'label' => isset($lang['name']) ? $this->l($lang['name']) : $this->l('Unknown language'),
+                    'name' => 'languageperdomainID' . $lang['id_lang'],
 					'size' => 20,
 					'required' => TRUE,
 					'value' => "emptyForNow",
@@ -540,4 +556,36 @@ class Languageperdomain extends Module implements WidgetInterface
 
 		file_put_contents( $path, $content );
 	}
+
+    private function syncWithShopUrl(array $domains): void
+    {
+        $idShop = (int)Context::getContext()->shop->id;
+        $table = _DB_PREFIX_ . 'shop_url';
+
+        foreach ($domains as $domain) {
+            $domain = trim($domain);
+            if (!$domain) {
+                continue;
+            }
+
+            $exists = Db::getInstance()->getValue(
+                "SELECT COUNT(*) FROM $table WHERE (domain = '" . pSQL($domain) . "' OR domain_ssl = '" . pSQL($domain) . "') AND id_shop = " . (int)$idShop
+            );
+
+            if (!$exists) {
+                // Insert new domain as alias
+                Db::getInstance()->insert('shop_url', [
+                    'id_shop'      => $idShop,
+                    'domain'       => pSQL($domain),
+                    'domain_ssl'   => pSQL($domain),
+                    'physical_uri' => '/',
+                    'virtual_uri'  => '',
+                    'main'         => 0,
+                    'active'       => 1,
+                ]);
+            }
+        }
+    }
+
+
 }
