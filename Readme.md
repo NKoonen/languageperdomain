@@ -2,6 +2,8 @@
 
 **Compatible with PrestaShop 1.7, 8 & 9**
 
+(for Prestashop 1.7 and 8 check the ps-17 branch on GitHub)
+
 ---
 
 ## 🧩 What does this module do?
